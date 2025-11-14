@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+           <div class="logo-section">
+            <span class="logo">
+               <img src="../BonbonPics/Logo.jpg" alt="Bonbon Kitchen" class="logo-image">
+            </span>
+            <span class="business-name">Bonbon Kitchen</span>
+            </div>
+            <nav class="main-navigation">
+                <h3>Main Navigation</h3>
+                <ul>
+                    <li class="active" data-section="dashboard">
+                        <i class="fas fa-th-large"></i> <a href="Dashboard.html">Dashboard</a>
+                    </li>
+                    <li data-section="pos">
+                        <i class="fas fa-cash-register"></i> <a href="POS.html">POS</a>
+                    </li>
+                    <li data-section="inventory">
+                        <i class="fas fa-warehouse"></i> Inventory
+                    </li>
+                    <li data-section="settings">
+                        <i class="fas fa-cog"></i> Settings
+                    </li>
+                </ul>
+            </nav>
+            <div class="logout">
+                <i class="fas fa-sign-out-alt"></i> Log out
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-title">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </div>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i> User
+                </div>
+            </header>
+
+            <section class="dashboard-body">
+                <h1>Dashboard</h1>
+
+                <div class="summary-cards">
+                    <div class="card">Today's Revenue</div>
+                    <div class="card">Monthly Revenue</div>
+                    <div class="card">Average Order Value</div>
+                    <div class="card inventory-link" data-link="inventory">Products in Stock</div>
+                    <div class="card inventory-link" data-link="inventory">Total Items</div>
+                    <div class="card inventory-link" data-link="inventory">Low Stock</div>
+                    <div class="card inventory-link" data-link="inventory">Out of Stock</div>
+                    <div class="card inventory-link" data-link="inventory">Total Value</div>
+                </div>
+
+                <div class="charts-and-favorites">
+                    <div class="chart-container sales">
+                        <h2>Sales (Chicken & Bubble Tea)</h2>
+                        <div id="sales-chart" class="chart-placeholder">
+                            <div class="bar-chart-visualization">
+                                <div class="bar-group">
+                                    <div class="bar" style="height: 60%;"></div>
+                                    <div class="bar" style="height: 40%;"></div>
+                                    <div class="bar" style="height: 75%;"></div>
+                                </div>
+                                <div class="bar-group">
+                                    <div class="bar" style="height: 50%;"></div>
+                                    <div class="bar" style="height: 80%;"></div>
+                                    <div class="bar" style="height: 65%;"></div>
+                                </div>
+                                <div class="bar-group">
+                                    <div class="bar" style="height: 70%;"></div>
+                                    <div class="bar" style="height: 55%;"></div>
+                                    <div class="bar" style="height: 90%;"></div>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <span class="series-1">Series 1</span>
+                                <span class="series-2">Series 2</span>
+                                <span class="series-3">Series 3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container favorites">
+                        <h2>Top 5 Favorite Chicken Flavors</h2>
+                        <div id="chicken-pie-chart" class="chart-placeholder">
+                            <div class="pie-chart-visualization">
+                                <div class="pie-segment" style="--p: 30; --c: #8e8e8e;"></div>
+                                <div class="pie-segment" style="--p: 50; --c: #c7c7c7;"></div>
+                                <div class="pie-segment" style="--p: 75; --c: #666666;"></div>
+                            </div>
+                            <div class="pie-legend">
+                                <span><i style="color: #8e8e8e;"></i> Flavor 1</span>
+                                <span><i style="color: #c7c7c7;"></i> Flavor 2</span>
+                                <span><i style="color: #666666;"></i> Flavor 3</span>
+                                <span><i style="color: #4a4a4a;"></i> Flavor 4</span>
+                                <span><i style="color: #333333;"></i> Flavor 5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container favorites bubble-tea-favorites">
+                        <h2>Top 5 Favorite Bubble Tea Flavors</h2>
+                        <div id="bubble-tea-pie-chart" class="chart-placeholder">
+                             <div class="pie-chart-visualization">
+                                <div class="pie-segment" style="--p: 30; --c: #8e8e8e;"></div>
+                                <div class="pie-segment" style="--p: 50; --c: #c7c7c7;"></div>
+                                <div class="pie-segment" style="--p: 75; --c: #666666;"></div>
+                            </div>
+                            <div class="pie-legend">
+                                <span><i style="color: #8e8e8e;"></i> Flavor A</span>
+                                <span><i style="color: #c7c7c7;"></i> Flavor B</span>
+                                <span><i style="color: #666666;"></i> Flavor C</span>
+                                <span><i style="color: #4a4a4a;"></i> Flavor D</span>
+                                <span><i style="color: #333333;"></i> Flavor E</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

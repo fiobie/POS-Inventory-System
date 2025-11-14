@@ -1,0 +1,291 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+body {
+    background-color: #f4f4f4; /* Light grey background */
+    color: #333;
+}
+
+/* --- Dashboard Container --- */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: 250px;
+    background-color: #e9e9e9; /* Slightly darker grey for sidebar */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #ccc;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #ccc;
+}
+
+.logo-image {
+    width: 40px; 
+    height: 40px; 
+    object-fit: contain; 
+    background-color: #ccc; 
+    padding: 5px;
+}
+
+.business-name {
+    font-weight: 500;
+    color: #555;
+}
+
+.main-navigation h3 {
+    margin: 20px 0 10px;
+    font-size: 0.9em;
+    color: #777;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+
+.main-navigation ul {
+    list-style: none;
+}
+
+.main-navigation li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: #555;
+    transition: background-color 0.2s;
+}
+
+.main-navigation li:hover:not(.active) {
+    background-color: #e0e0e0;
+}
+
+.main-navigation li.active {
+    background-color: #ccc; /* Highlight color */
+    font-weight: 600;
+    color: #333;
+}
+
+.logout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    color: #555;
+    margin-top: auto;
+    border-top: 1px solid #ccc;
+}
+
+/* --- Main Content --- */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.header-title {
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #555;
+}
+
+.user-info {
+    font-size: 1.1em;
+    color: #555;
+}
+
+/* Dashboard Body */
+.dashboard-body {
+    padding: 30px;
+    flex-grow: 1;
+}
+
+.dashboard-body h1 {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+/* A. Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns for top row */
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: #fff;
+    border: 1px solid #eee;
+    padding: 25px;
+    min-height: 100px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    font-weight: 500;
+    color: #666;
+}
+
+.inventory-link {
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+
+.inventory-link:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+
+/* B. Charts and Favorites */
+.charts-and-favorites {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap; /* Allows charts to wrap on smaller screens */
+}
+
+.chart-container {
+    flex: 1 1 45%; /* Allows two containers per row on large screens */
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    min-width: 300px; /* Ensures a minimum size */
+}
+
+.chart-container h2 {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+/* Sales Bar Chart Styling (Placeholder) */
+.sales {
+    display: flex;
+    flex-direction: column;
+}
+
+.bar-chart-visualization {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 200px;
+    padding: 0 10px;
+}
+
+.bar-group {
+    display: flex;
+    gap: 2px;
+    height: 100%;
+    align-items: flex-end;
+}
+
+.bar {
+    width: 15px;
+    background-color: #8e8e8e;
+    transition: height 0.3s;
+}
+
+.bar-group:nth-child(2) .bar { background-color: #c7c7c7; }
+.bar-group:nth-child(3) .bar { background-color: #666666; }
+
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+.chart-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+    border-radius: 2px;
+}
+.chart-legend .series-1::before { background-color: #8e8e8e; }
+.chart-legend .series-2::before { background-color: #c7c7c7; }
+.chart-legend .series-3::before { background-color: #666666; }
+
+/* Pie Chart Styling (Placeholder) */
+.favorites {
+    display: flex;
+    flex-direction: column;
+}
+
+.pie-chart-visualization {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 20px auto;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--c) 0% var(--p), 
+        #f0f0f0 var(--p) 100%
+    );
+    /* Simple representation of the pie chart from the image */
+    background-image: conic-gradient(
+        #8e8e8e 0 30%,    /* Flavor 1: 30% */
+        #c7c7c7 30% 60%,  /* Flavor 2: 30% */
+        #666666 60% 85%,  /* Flavor 3: 25% */
+        #4a4a4a 85% 95%,  /* Flavor 4: 10% */
+        #333333 95% 100%  /* Flavor 5: 5% */
+    );
+}
+
+.pie-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px 25px;
+    margin-top: 15px;
+    padding: 0 10px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+.pie-legend span {
+    display: flex;
+    align-items: center;
+}
+
+.pie-legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+    border-radius: 50%;
+}
