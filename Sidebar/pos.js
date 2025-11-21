@@ -920,116 +920,61 @@ function generateReceipt(orderId) {
         </tr>
     `).join('');
 
-    const receiptHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8" />
-            <title>Receipt #${formattedId}</title>
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                    background: #f7f7f7;
-                    margin: 0;
-                    padding: 20px;
-                }
-                .receipt {
-                    background: #ffffff;
-                    border: 1px solid #ddd;
-                    border-radius: 12px;
-                    padding: 24px;
-                    max-width: 480px;
-                    margin: 0 auto;
-                }
-                h2, h3 {
-                    margin: 0;
-                    text-align: center;
-                }
-                .meta {
-                    margin: 20px 0;
-                    font-size: 14px;
-                }
-                .meta div {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 6px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                }
-                th, td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                    font-size: 14px;
-                }
-                th {
-                    background: #FF8C00;
-                    color: #8B0000;
-                }
-                .total {
-                    font-weight: 700;
-                    text-align: right;
-                    margin-top: 16px;
-                    font-size: 16px;
-                }
-                .notes {
-                    margin-top: 16px;
-                    font-size: 14px;
-                }
-                .footer {
-                    margin-top: 24px;
-                    text-align: center;
-                    font-size: 12px;
-                    color: #777;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="receipt">
-                <h2>Bonbon Kitchen</h2>
-                <h3>Order Receipt</h3>
-                <div class="meta">
-                    <div><span>Order No.:</span><span>#${formattedId}</span></div>
-                    <div><span>Date:</span><span>${order.dateDisplay}</span></div>
-                    <div><span>Time:</span><span>${order.timeDisplay}</span></div>
-                    <div><span>Payment:</span><span>${capitalize(order.paymentMethod)}</span></div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${itemsRows}
-                    </tbody>
-                </table>
-                <div class="total">Total: ₱${order.total.toFixed(2)}</div>
-                <div class="notes"><strong>Notes:</strong> ${notesValue}</div>
-                <div class="footer">
-                    Thank you for dining with Bonbon Kitchen!<br/>
-                    Save this receipt as PDF via the print dialog.
-                </div>
-            </div>
-            <script>
-                window.onload = function() {
-                    window.focus();
-                    window.print();
-                };
-            </script>
-        </body>
-        </html>
+    if (typeof html2canvas === 'undefined') {
+        alert('Unable to save receipt because html2canvas failed to load.');
+        return;
+    }
+
+    const receiptElement = document.createElement('div');
+    receiptElement.className = 'receipt-capture';
+    receiptElement.innerHTML = `
+        <h2>Bonbon Kitchen</h2>
+        <h3>Order Receipt</h3>
+        <div class="receipt-meta">
+            <div><span>Order No.:</span><span>#${formattedId}</span></div>
+            <div><span>Date:</span><span>${order.dateDisplay}</span></div>
+            <div><span>Time:</span><span>${order.timeDisplay}</span></div>
+            <div><span>Payment:</span><span>${capitalize(order.paymentMethod)}</span></div>
+        </div>
+        <table class="receipt-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${itemsRows}
+            </tbody>
+        </table>
+        <div class="receipt-total">Total: ₱${order.total.toFixed(2)}</div>
+        <div class="receipt-notes"><strong>Notes:</strong> ${notesValue}</div>
+        <div class="receipt-footer">
+            Thank you for dining with Bonbon Kitchen!<br/>
+            Enjoy your meal!
+        </div>
     `;
 
-    const receiptWindow = window.open('', '_blank', 'width=500,height=700');
-    receiptWindow.document.write(receiptHtml);
-    receiptWindow.document.close();
+    document.body.appendChild(receiptElement);
+
+    requestAnimationFrame(() => {
+        html2canvas(receiptElement, {
+            backgroundColor: '#ffffff',
+            scale: 2
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `receipt_${formattedId}.png`;
+            link.click();
+        }).catch(error => {
+            console.error('Failed to capture receipt', error);
+            alert('Unable to save the receipt. Please try again.');
+        }).finally(() => {
+            document.body.removeChild(receiptElement);
+        });
+    });
 }
 
 // Make functions globally accessible
