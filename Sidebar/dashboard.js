@@ -113,7 +113,7 @@ function initializeCharts() {
 
         drawPlaceholderPieChart(bubbleTeaCtx, bubbleTeaCanvas.width, bubbleTeaCanvas.height);
     }
-    
+
     // Handle window resize
     let resizeTimeout;
     window.addEventListener('resize', function() {
