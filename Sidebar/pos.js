@@ -17,14 +17,14 @@ const products = {
         { id: 11, name: 'Honey Mustard Chikin', price: 159, category: 'chicken', image: 'Bonbon Pics/honey mustard chikin.jpg'}
     ],
     bubbletea: [
-        createBubbleTeaProduct(12, 'Classic', 80, 'Bonbon Pics/Milktea3.jpg'),
-        createBubbleTeaProduct(13, 'Wintermelon', 90, 'Bonbon Pics/Milktea3.jpg'),
-        createBubbleTeaProduct(14, 'Okinawa', 90, 'Bonbon Pics/Milktea3.jpg'),
-        createBubbleTeaProduct(15, 'Cookies & Cream', 85, 'Bonbon Pics/Milktea1.jpg'),
-        createBubbleTeaProduct(16, 'Matcha', 85, 'Bonbon Pics/Milktea4.jpg'),
-        createBubbleTeaProduct(17, 'Taro', 80, 'Bonbon Pics/Milktea4.jpg'),
-        createBubbleTeaProduct(18, 'Strawberry', 85, 'Bonbon Pics/Milktea1.jpg'),
-        createBubbleTeaProduct(19, 'Chocolate', 85, 'Bonbon Pics/Milktea4.jpg'),
+        createBubbleTeaProduct(12, 'Classic', 45, 'Bonbon Pics/Milktea3.jpg'),
+        createBubbleTeaProduct(13, 'Wintermelon', 50, 'Bonbon Pics/Milktea3.jpg'),
+        createBubbleTeaProduct(14, 'Okinawa', 50, 'Bonbon Pics/Milktea3.jpg'),
+        createBubbleTeaProduct(15, 'Cookies & Cream', 60, 'Bonbon Pics/Milktea1.jpg'),
+        createBubbleTeaProduct(16, 'Matcha', 55, 'Bonbon Pics/Milktea4.jpg'),
+        createBubbleTeaProduct(17, 'Taro', 55, 'Bonbon Pics/Milktea4.jpg'),
+        createBubbleTeaProduct(18, 'Strawberry', 55, 'Bonbon Pics/Milktea1.jpg'),
+        createBubbleTeaProduct(19, 'Chocolate', 55, 'Bonbon Pics/Milktea4.jpg'),
         createBubbleTeaProduct(20, 'Brown Sugar', 80, 'Bonbon Pics/Milktea2.jpg')
     ]
 };
@@ -38,8 +38,8 @@ function createBubbleTeaProduct(id, name, basePrice, image) {
         price: basePrice,
         sizes: {
             small: basePrice,
-            medium: basePrice + 10,
-            large: basePrice + 20
+            medium: basePrice + 15,
+            large: basePrice + 30
         }
     };
 }
@@ -801,3 +801,4 @@ window.editOrder = editOrder;
 window.cancelOrder = cancelOrder;
 window.generateReceipt = generateReceipt;
 window.addToOrder = addToOrder;
+
