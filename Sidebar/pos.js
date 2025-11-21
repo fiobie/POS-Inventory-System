@@ -51,6 +51,8 @@ let orderList = loadOrdersFromStorage();
 let orderIdCounter = computeNextOrderId();
 let currentCategory = 'all';
 let selectedOrderDate = getTodayISO();
+let nextProductId = getInitialProductId();
+let cropperInstance = null;
 
 // Toggle visibility of order sections (Notes, Payment, Total Price, Confirm Button)
 function toggleOrderSections(show) {
@@ -110,6 +112,15 @@ function getTodayISO() {
     return new Date().toISOString().split('T')[0];
 }
 
+function getInitialProductId() {
+    const categories = Object.values(products);
+    const maxId = categories.reduce((outerMax, items) => {
+        const catMax = items.reduce((innerMax, product) => Math.max(innerMax, product.id || 0), 0);
+        return Math.max(outerMax, catMax);
+    }, 0);
+    return maxId + 1;
+}
+
 function initializeDateFilter() {
     const dateInput = document.getElementById('orderDateFilter');
     if (dateInput) {
@@ -140,6 +151,7 @@ function capitalize(value) {
 document.addEventListener('DOMContentLoaded', function() {
     initializeProducts();
     setupEventListeners();
+    setupAddProductModal();
     updateTotalPrice();
     // Hide sections initially
     toggleOrderSections(false);
@@ -181,7 +193,9 @@ function createProductCard(product) {
         ? `<img src="${product.image}" alt="${product.name}">`
         : `<i class="fas fa-cloud"></i>`;
 
-    if (product.category === 'bubbletea') {
+    const hasBubbleTeaSizes = product.category === 'bubbletea' && product.sizes;
+
+    if (hasBubbleTeaSizes) {
         const sizeButtons = Object.entries(product.sizes).map(([size, price]) => `
             <button class="size-btn" data-size="${size}" data-price="${price}">
                 ${capitalize(size)}
@@ -216,6 +230,17 @@ function createProductCard(product) {
         `;
         card.addEventListener('click', () => addToOrder(product));
     }
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'product-delete-btn';
+    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+    deleteBtn.title = 'Delete product';
+    deleteBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        confirmProductDeletion(product);
+    });
+
+    card.appendChild(deleteBtn);
 
     return card;
 }
@@ -322,7 +347,7 @@ function decreaseQuantity(itemKey) {
         if (item.quantity > 1) {
             item.quantity -= 1;
         } else {
-            removeFromOrder(productId);
+            removeFromOrder(itemKey);
             return;
         }
         updateOrderDisplay();
@@ -660,6 +685,220 @@ function exportOrdersToPdf() {
     const pdfWindow = window.open('', '_blank');
     pdfWindow.document.write(html);
     pdfWindow.document.close();
+}
+
+// Add Product Modal & Cropper Logic
+function setupAddProductModal() {
+    const modal = document.getElementById('addProductModal');
+    const openBtn = document.getElementById('openAddProductBtn');
+    const closeBtn = document.getElementById('closeAddProductBtn');
+    const cancelBtn = document.getElementById('cancelAddProductBtn');
+    const form = document.getElementById('addProductForm');
+    const imageInput = document.getElementById('productImageInput');
+
+    if (!modal || !openBtn || !form || !imageInput) {
+        return;
+    }
+
+    openBtn.addEventListener('click', openAddProductModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeAddProductModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeAddProductModal);
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeAddProductModal();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('show')) {
+            closeAddProductModal();
+        }
+    });
+
+    form.addEventListener('submit', handleAddProductSubmit);
+    imageInput.addEventListener('change', handleAddProductImage);
+}
+
+function openAddProductModal() {
+    resetAddProductForm();
+    const modal = document.getElementById('addProductModal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+function closeAddProductModal() {
+    const modal = document.getElementById('addProductModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+    resetAddProductForm();
+}
+
+function resetAddProductForm() {
+    const form = document.getElementById('addProductForm');
+    const imageInput = document.getElementById('productImageInput');
+
+    if (form) form.reset();
+    if (imageInput) imageInput.value = '';
+
+    destroyCropper(true);
+}
+
+function handleAddProductImage(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+        destroyCropper(true);
+        return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file.');
+        event.target.value = '';
+        destroyCropper(true);
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(loadEvent) {
+        const cropperImage = document.getElementById('cropperImage');
+        if (!cropperImage) return;
+
+        const result = loadEvent.target && loadEvent.target.result ? loadEvent.target.result : reader.result;
+        if (!result) return;
+
+        cropperImage.src = result;
+        cropperImage.style.display = 'block';
+        initializeCropper(cropperImage);
+    };
+    reader.readAsDataURL(file);
+}
+
+function initializeCropper(imageElement) {
+    if (typeof Cropper === 'undefined') {
+        console.error('Cropper.js is not loaded.');
+        return;
+    }
+
+    destroyCropper();
+
+    cropperInstance = new Cropper(imageElement, {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 1,
+        background: false,
+        responsive: true,
+        preview: '.crop-preview',
+        movable: true,
+        zoomable: true,
+        scalable: false,
+        guides: true
+    });
+}
+
+function destroyCropper(clearPreview = false) {
+    if (cropperInstance) {
+        cropperInstance.destroy();
+        cropperInstance = null;
+    }
+
+    if (clearPreview) {
+        const cropperImage = document.getElementById('cropperImage');
+        if (cropperImage) {
+            cropperImage.removeAttribute('src');
+            cropperImage.style.display = 'none';
+        }
+        const preview = document.querySelector('.crop-preview');
+        if (preview) {
+            preview.innerHTML = '';
+        }
+    }
+}
+
+function handleAddProductSubmit(event) {
+    event.preventDefault();
+
+    const nameInput = document.getElementById('productNameInput');
+    const priceInput = document.getElementById('productPriceInput');
+    const categoryInput = document.getElementById('productCategoryInput');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const priceValue = priceInput ? parseFloat(priceInput.value) : NaN;
+    const category = categoryInput ? categoryInput.value : 'chicken';
+
+    if (!name) {
+        alert('Please enter the product name.');
+        return;
+    }
+
+    if (Number.isNaN(priceValue) || priceValue <= 0) {
+        alert('Please enter a valid price.');
+        return;
+    }
+
+    if (!cropperInstance) {
+        alert('Please upload and crop an image for the product.');
+        return;
+    }
+
+    const canvas = cropperInstance.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingQuality: 'high'
+    });
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+    const newProduct = {
+        id: nextProductId++,
+        name,
+        price: priceValue,
+        category,
+        image: imageDataUrl
+    };
+
+    addCustomProductToCatalog(newProduct);
+    closeAddProductModal();
+    alert(`${newProduct.name} was added to the catalog!`);
+}
+
+function addCustomProductToCatalog(product) {
+    if (!products[product.category]) {
+        products[product.category] = [];
+    }
+    products[product.category].push(product);
+
+    if (currentCategory === 'all' || currentCategory === product.category) {
+        displayProducts(currentCategory);
+    }
+}
+
+function confirmProductDeletion(product) {
+    const confirmed = confirm(`Delete "${product.name}" from ${capitalize(product.category)}?`);
+    if (!confirmed) return;
+    deleteProductFromCatalog(product.id, product.category);
+}
+
+function deleteProductFromCatalog(productId, category) {
+    const categoryList = products[category];
+    if (!Array.isArray(categoryList)) {
+        alert('Unable to remove product: category not found.');
+        return;
+    }
+
+    const index = categoryList.findIndex(item => item.id === productId);
+    if (index === -1) {
+        alert('Product not found. It may have already been deleted.');
+        return;
+    }
+
+    const [removedProduct] = categoryList.splice(index, 1);
+
+    if (currentCategory === 'all' || currentCategory === category) {
+        displayProducts(currentCategory);
+    }
+
+    alert(`"${removedProduct.name}" has been removed from the catalog.`);
 }
 
 // Generate printable/downloadable receipt
