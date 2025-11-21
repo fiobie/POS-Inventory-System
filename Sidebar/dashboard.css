@@ -260,12 +260,6 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.centered-chart {
-    grid-column: 1 / -1;
-    justify-self: center;
-    width: min(100%, 520px);
-}
-
 .chart-title {
     font-size: 18px;
     font-weight: 600;
