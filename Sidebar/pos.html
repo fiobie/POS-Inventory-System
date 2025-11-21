@@ -6,6 +6,7 @@
     <title>POS - Bonbon Kitchen</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="pos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
     <div class="container">
@@ -58,15 +59,21 @@
                 <section class="product-catalog">
                     <div class="catalog-header">
                         <h3 class="catalog-title">Product Catalog</h3>
-                        <div class="categories-dropdown">
-                            <button class="categories-btn" id="categoriesBtn">
-                                Categories
-                                <i class="fas fa-chevron-down"></i>
+                        <div class="catalog-actions">
+                            <button class="add-product-btn" id="openAddProductBtn">
+                                <i class="fas fa-plus"></i>
+                                Add Product
                             </button>
-                            <div class="dropdown-menu" id="dropdownMenu">
-                                <a href="#" class="dropdown-item" data-category="all">All Products</a>
-                                <a href="#" class="dropdown-item" data-category="chicken">Chicken Flavors</a>
-                                <a href="#" class="dropdown-item" data-category="bubbletea">Bubble Tea Flavors</a>
+                            <div class="categories-dropdown">
+                                <button class="categories-btn" id="categoriesBtn">
+                                    Categories
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="dropdown-menu" id="dropdownMenu">
+                                    <a href="#" class="dropdown-item" data-category="all">All Products</a>
+                                    <a href="#" class="dropdown-item" data-category="chicken">Chicken Flavors</a>
+                                    <a href="#" class="dropdown-item" data-category="bubbletea">Bubble Tea Flavors</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -175,6 +182,63 @@
         </div>
     </div>
 
+    <!-- Add Product Modal -->
+    <div class="modal-overlay" id="addProductModal">
+        <div class="modal-content product-modal">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-drumstick-bite"></i>
+                    Add New Product
+                </h3>
+                <button class="close-btn" id="closeAddProductBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="modal-body add-product-form" id="addProductForm">
+                <div class="form-grid">
+                    <label class="form-control">
+                        <span>Product Name</span>
+                        <input type="text" id="productNameInput" placeholder="e.g. Garlic Parmesan" required>
+                    </label>
+                    <label class="form-control">
+                        <span>Price (₱)</span>
+                        <input type="number" id="productPriceInput" min="1" step="1" placeholder="149" required>
+                    </label>
+                    <label class="form-control">
+                        <span>Category</span>
+                        <select id="productCategoryInput">
+                            <option value="chicken" selected>Chicken Flavors</option>
+                            <option value="bubbletea">Bubble Tea Flavors</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="image-upload-group">
+                    <div class="group-header">
+                        <span>Product Image</span>
+                        <small>Upload an image then crop it to match the round product card.</small>
+                    </div>
+                    <input type="file" id="productImageInput" accept="image/*" required>
+                    <div class="cropper-panels">
+                        <div class="cropper-wrapper">
+                            <img id="cropperImage" alt="Crop selection preview">
+                        </div>
+                        <div class="crop-preview-container">
+                            <span>Preview</span>
+                            <div class="crop-preview"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="cancelAddProductBtn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="pos.js"></script>
 </body>
 </html>
