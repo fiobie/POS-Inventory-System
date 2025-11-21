@@ -102,6 +102,17 @@ function initializeCharts() {
         // Draw placeholder pie chart
         drawPlaceholderPieChart(pieCtx, pieCanvas.width, pieCanvas.height);
     }
+
+    // Bubble Tea Pie Chart
+    const bubbleTeaCanvas = document.getElementById('bubbleTeaChart');
+    if (bubbleTeaCanvas) {
+        const bubbleTeaCtx = bubbleTeaCanvas.getContext('2d');
+
+        bubbleTeaCanvas.width = bubbleTeaCanvas.offsetWidth;
+        bubbleTeaCanvas.height = bubbleTeaCanvas.offsetHeight;
+
+        drawPlaceholderPieChart(bubbleTeaCtx, bubbleTeaCanvas.width, bubbleTeaCanvas.height);
+    }
     
     // Handle window resize
     let resizeTimeout;
