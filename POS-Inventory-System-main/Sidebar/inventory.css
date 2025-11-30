@@ -314,32 +314,48 @@
 /* Table Container */
 .table-container {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
     margin-top: 20px;
+    position: relative;
+    border: 1px solid #ececec;
+    border-radius: 8px;
 }
 
 .products-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 14px;
+    table-layout: fixed;
 }
 
 .products-table thead {
     background-color: #FF8C00;
     color: #000;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .products-table th {
     padding: 15px;
-    text-align: left;
+    text-align: center;
     font-weight: 600;
     border: 1px solid #000;
     font-size: 14px;
+    position: sticky;
+    top: 0;
+    background-color: #FF8C00;
+    z-index: 10;
 }
 
 .products-table td {
     padding: 15px;
     border: 1px solid #e0e0e0;
     border-top: none;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .products-table tbody tr {
@@ -471,6 +487,39 @@
     gap: 10px;
 }
 
+.product-modal {
+    max-width: 640px;
+    border: 1px solid #ffe0b3;
+}
+
+.product-modal .modal-header {
+    background: linear-gradient(120deg, #fff6eb, #ffe8cc);
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+}
+
+.product-modal .modal-body {
+    padding: 25px 30px 35px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px 24px;
+}
+
+.id-group .form-input {
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #777;
+}
+
 .close-btn {
     background: none;
     border: none;
@@ -531,15 +580,7 @@
 }
 
 .category-input-wrapper .form-input {
-    padding-right: 40px;
-}
-
-.category-dropdown-icon {
-    position: absolute;
-    right: 12px;
-    color: #666;
-    pointer-events: none;
-    font-size: 14px;
+    padding-right: 12px;
 }
 
 .form-actions {
@@ -580,6 +621,48 @@
     background-color: #700000;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(139, 0, 0, 0.3);
+}
+
+.confirm-modal {
+    max-width: 420px;
+}
+
+.confirm-modal .modal-body {
+    padding: 25px 30px 35px;
+}
+
+.confirm-modal p {
+    font-size: 15px;
+    color: #333;
+    margin: 0;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #b02a37;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(208, 33, 44, 0.3);
 }
 
 /* Responsive Design */
@@ -676,6 +759,10 @@
 
     .sort-btn {
         width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
     }
 }
 

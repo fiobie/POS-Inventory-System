@@ -5,6 +5,8 @@ const STORAGE_KEY = 'bonbonInventory';
 
 // Inventory data structure
 let inventoryData = [];
+let nextProductNumber = 1;
+let pendingDeleteProductId = null;
 
 // Current filter state
 let currentCategory = 'all';
@@ -16,6 +18,7 @@ const LOW_STOCK_THRESHOLD = 10;
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     loadInventoryData();
+    initializeNextProductNumber();
     populateCategoryList();
     populateSortMenu();
     renderTable();
@@ -78,7 +81,7 @@ function loadInventoryData() {
             // Initialize with sample data if empty
             inventoryData = [
                 {
-                    id: '0123456',
+                    id: '#0001',
                     name: '16oz Cup',
                     category: 'cups',
                     price: 1.3,
@@ -94,6 +97,28 @@ function loadInventoryData() {
     }
 }
 
+// Initialize counter for sequential IDs
+function initializeNextProductNumber() {
+    const highest = inventoryData.reduce((max, item) => {
+        const numericId = extractNumericPortion(item.id);
+        return Math.max(max, numericId);
+    }, 0);
+    nextProductNumber = highest + 1;
+    if (nextProductNumber < 1) {
+        nextProductNumber = 1;
+    }
+}
+
+function extractNumericPortion(id) {
+    if (!id) return 0;
+    const digits = id.toString().replace(/\D/g, '');
+    return digits ? parseInt(digits, 10) : 0;
+}
+
+function formatProductId(number) {
+    return `#${number.toString().padStart(4, '0')}`;
+}
+
 // Save inventory data to localStorage
 function saveInventoryData() {
     try {
@@ -105,8 +130,13 @@ function saveInventoryData() {
 
 // Generate unique product ID
 function generateProductId() {
-    const timestamp = Date.now().toString();
-    return timestamp.slice(-7);
+    const id = formatProductId(nextProductNumber);
+    nextProductNumber += 1;
+    return id;
+}
+
+function previewNextProductId() {
+    return formatProductId(nextProductNumber);
 }
 
 // Calculate product status based on stock
@@ -311,7 +341,7 @@ function openAddProductModal() {
     title.innerHTML = '<i class="fas fa-box"></i> Add Product';
     form.reset();
     form.dataset.mode = 'add';
-    document.getElementById('productIdInput').value = generateProductId();
+    document.getElementById('productIdInput').value = previewNextProductId();
     modal.classList.add('show');
 }
 
@@ -329,7 +359,6 @@ function editProduct(productId) {
     form.dataset.productId = productId;
     
     document.getElementById('productIdInput').value = product.id;
-    document.getElementById('productIdInput').disabled = true;
     document.getElementById('productNameInput').value = product.name;
     // Show category display name in edit mode
     document.getElementById('productCategoryInput').value = getCategoryText(product.category);
@@ -344,11 +373,14 @@ function deleteProduct(productId) {
     const product = inventoryData.find(item => item.id === productId);
     if (!product) return;
 
-    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-        inventoryData = inventoryData.filter(item => item.id !== productId);
-        saveInventoryData();
-        renderTable();
-        updateSummaryCards();
+    pendingDeleteProductId = productId;
+    const modal = document.getElementById('confirmDeleteModal');
+    const message = document.getElementById('confirmDeleteMessage');
+    if (message) {
+        message.innerHTML = `Are you sure you want to delete <strong>${product.name}</strong>?`;
+    }
+    if (modal) {
+        modal.classList.add('show');
     }
 }
 
@@ -358,7 +390,8 @@ function handleFormSubmit(e) {
     
     const form = e.target;
     const mode = form.dataset.mode;
-    const productId = document.getElementById('productIdInput').value.trim();
+    const idInput = document.getElementById('productIdInput');
+    let productId = idInput.value.trim();
     const name = document.getElementById('productNameInput').value.trim();
     const categoryInput = document.getElementById('productCategoryInput').value.trim();
     const price = parseFloat(document.getElementById('productPriceInput').value);
@@ -387,9 +420,11 @@ function handleFormSubmit(e) {
     }
 
     if (mode === 'add') {
+        productId = generateProductId();
+        idInput.value = productId;
         // Check if ID already exists
         if (inventoryData.find(item => item.id === productId)) {
-            alert('Product ID already exists. Please use a different ID.');
+            alert('Product ID already exists. Please try again.');
             return;
         }
 
@@ -435,7 +470,28 @@ function closeModal() {
     form.reset();
     form.dataset.mode = '';
     form.dataset.productId = '';
-    document.getElementById('productIdInput').disabled = false;
+    document.getElementById('productIdInput').value = previewNextProductId();
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('confirmDeleteModal');
+    pendingDeleteProductId = null;
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+function confirmDeleteProduct() {
+    if (!pendingDeleteProductId) {
+        closeDeleteModal();
+        return;
+    }
+
+    inventoryData = inventoryData.filter(item => item.id !== pendingDeleteProductId);
+    saveInventoryData();
+    renderTable();
+    updateSummaryCards();
+    closeDeleteModal();
 }
 
 // Clear filters
@@ -463,6 +519,18 @@ function setupEventListeners() {
             closeModal();
         }
     });
+
+    const confirmModal = document.getElementById('confirmDeleteModal');
+    if (confirmModal) {
+        document.getElementById('confirmDeleteCancel').addEventListener('click', closeDeleteModal);
+        document.getElementById('closeConfirmModalBtn').addEventListener('click', closeDeleteModal);
+        document.getElementById('confirmDeleteConfirm').addEventListener('click', confirmDeleteProduct);
+        confirmModal.addEventListener('click', function(e) {
+            if (e.target === confirmModal) {
+                closeDeleteModal();
+            }
+        });
+    }
 
     // Form submission
     document.getElementById('productForm').addEventListener('submit', handleFormSubmit);

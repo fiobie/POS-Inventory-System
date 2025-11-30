@@ -90,17 +90,14 @@ body {
 .sidebar-user-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.2;
+    line-height: 1.4;
+    justify-content: center;
 }
 
 .sidebar-user-name {
     font-weight: 600;
     color: #8B0000;
-}
-
-.sidebar-user-email {
-    font-size: 12px;
-    color: #666;
+    font-size: 14px;
 }
 
 .nav-menu {

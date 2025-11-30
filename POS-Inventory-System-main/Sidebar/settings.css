@@ -258,10 +258,11 @@
 
 .logs-table th {
     border-bottom: 2px solid #d5d5d5;
+    text-align: center;
 }
 
 .logs-table thead {
-    background-color: #FFD700;
+    background-color: #FF8C00;
     color: #000;
     position: sticky;
     top: 0;
@@ -271,7 +272,7 @@
 .logs-table thead th {
     position: sticky;
     top: 0;
-    background-color: #FFD700;
+    background-color: #FF8C00;
     z-index: 10;
 }
 
