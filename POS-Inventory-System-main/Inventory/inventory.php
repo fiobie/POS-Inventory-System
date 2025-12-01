@@ -1,5 +1,15 @@
 <?php include 'db_connection.php'; 
 
+// Auto-populate products if table is empty
+$check_products = $conn->query("SELECT COUNT(*) as count FROM products WHERE is_active = 1");
+$product_count = $check_products->fetch_assoc()['count'];
+
+if ($product_count == 0) {
+    // Include the populate function
+    include 'populate_products.php';
+    populateProducts();
+} 
+
 
 
 
