@@ -1,19 +1,81 @@
-<?php include 'db_connection.php'; 
+<?php 
+// Include database connection (adjust path if needed)
+include '../Sidebar/db_connection.php'; 
 
-// Auto-populate products if table is empty
-$check_products = $conn->query("SELECT COUNT(*) as count FROM products WHERE is_active = 1");
-$product_count = $check_products->fetch_assoc()['count'];
+// Select all products from the database
+$products_query = "SELECT 
+    p.product_id,
+    p.client_product_id,
+    p.name,
+    p.selling_price,
+    p.stock_quantity,
+    p.reorder_level,
+    p.is_active,
+    p.image_path,
+    pc.category_id,
+    pc.name as category_name,
+    pc.slug as category_slug
+FROM products p
+LEFT JOIN product_categories pc ON p.category_id = pc.category_id
+WHERE p.is_active = 1
+ORDER BY p.product_id DESC";
 
-if ($product_count == 0) {
-    // Include the populate function
-    include 'populate_products.php';
-    populateProducts();
-} 
+$products_result = $conn->query($products_query);
 
+// Store products in array for JavaScript
+$products_data = [];
+if ($products_result && $products_result->num_rows > 0) {
+    while ($row = $products_result->fetch_assoc()) {
+        $products_data[] = [
+            'id' => $row['client_product_id'] ?: '#' . str_pad($row['product_id'], 4, '0', STR_PAD_LEFT),
+            'product_id' => $row['product_id'],
+            'name' => $row['name'],
+            'category' => $row['category_slug'] ?: 'uncategorized',
+            'category_name' => $row['category_name'] ?: 'Uncategorized',
+            'price' => floatval($row['selling_price']),
+            'stock' => intval($row['stock_quantity']),
+            'reorder_level' => intval($row['reorder_level']),
+            'image_path' => $row['image_path']
+        ];
+    }
+}
 
+// Get summary statistics
+$summary_query = "SELECT 
+    COUNT(CASE WHEN stock_quantity > 0 THEN 1 END) as products_in_stock,
+    COUNT(*) as total_items,
+    COUNT(CASE WHEN stock_quantity > 0 AND stock_quantity <= reorder_level THEN 1 END) as low_stock,
+    COUNT(CASE WHEN stock_quantity = 0 THEN 1 END) as out_of_stock,
+    SUM(selling_price * stock_quantity) as total_value
+FROM products
+WHERE is_active = 1";
 
+$summary_result = $conn->query($summary_query);
+$summary_data = [];
+if ($summary_result) {
+    $summary_row = $summary_result->fetch_assoc();
+    $summary_data = [
+        'productsInStock' => intval($summary_row['products_in_stock']),
+        'totalItems' => intval($summary_row['total_items']),
+        'lowStock' => intval($summary_row['low_stock']),
+        'outOfStock' => intval($summary_row['out_of_stock']),
+        'totalValue' => floatval($summary_row['total_value'] ?? 0)
+    ];
+}
 
-
+// Get categories
+$categories_query = "SELECT category_id, slug, name FROM product_categories ORDER BY name";
+$categories_result = $conn->query($categories_query);
+$categories_data = [];
+if ($categories_result) {
+    while ($row = $categories_result->fetch_assoc()) {
+        $categories_data[] = [
+            'id' => $row['category_id'],
+            'slug' => $row['slug'],
+            'name' => $row['name']
+        ];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -165,14 +227,14 @@ if ($product_count == 0) {
                     <table class="products-table" id="productsTable">
                         <thead>
                             <tr>
-                                <th>Product ID:</th>
-                                <th>Product Name:</th>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
                                 <th>Category</th>
-                                <th>Price:</th>
+                                <th>Price</th>
                                 <th>Stock</th>
                                 <th>Status</th>
                                 <th>Value</th>
-                                <th>Actions:</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="productsTableBody">
@@ -231,6 +293,16 @@ if ($product_count == 0) {
         </div>
     </div>
 
+    <script>
+        // Pass PHP data to JavaScript
+        window.productsData = <?php echo json_encode($products_data); ?>;
+        window.summaryData = <?php echo json_encode($summary_data); ?>;
+        window.categoriesData = <?php echo json_encode($categories_data); ?>;
+        
+        console.log('Products loaded from database:', window.productsData.length);
+        console.log('Summary data:', window.summaryData);
+        console.log('Categories loaded:', window.categoriesData.length);
+    </script>
     <script src="user-profile.js"></script>
     <script src="inventory.js"></script>
 </body>
