@@ -226,7 +226,6 @@ CREATE TABLE `ingredients` (
   `cost_per_unit` DECIMAL(10,4) NOT NULL COMMENT 'Calculated: purchase_price / units_per_purchase',
   `current_stock` DECIMAL(12,4) NOT NULL DEFAULT 0.0000 COMMENT 'Current quantity in base unit',
   `reorder_level` DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
-  `supplier` VARCHAR(150),
   `storage_location` VARCHAR(100),
   `is_active` TINYINT(1) DEFAULT 1,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -367,7 +366,8 @@ INSERT INTO `product_categories`
 VALUES
   (1, 'chicken', 'Chicken Flavors', 'Signature double-fried Korean chicken flavors.', 15),
   (2, 'bubbletea', 'Bubble Tea Flavors', 'Milk tea line with customizable sizes.', 20),
-  (3, 'cups', 'Cups & Packaging', 'Packaging supplies and disposables.', 200);
+  (3, 'cups', 'Cups & Packaging', 'Packaging supplies and disposables.', 200),
+  (4, 'packaging', 'Packaging', 'Packaging supplies tracked as products.', 300);
 
 INSERT INTO `products`
   (`product_id`, `client_product_id`, `category_id`, `name`, `description`, `unit`, `sku`,
@@ -414,8 +414,43 @@ VALUES
    24.00, 55.00, 45, 20, 1, 'Bonbon Pics/Milktea4.jpg', 1, 1),
   (2009, 'BT-0009', 2, 'Brown Sugar Milk Tea', 'Thick brown sugar syrup swirl.', 'drink', 'BT-0009',
    32.00, 80.00, 19, 15, 1, 'Bonbon Pics/Milktea2.jpg', 1, 1),
-  (3001, 'SUP-0001', 3, '16oz Cup', 'PET 16oz cups for bubble tea line.', 'piece', 'SUP-0001',
-   0.60, 1.30, 480, 250, 1, 'Bonbon Pics/Logo.png', 1, 1);
+  (3001, 'SUP-0001', 2, '16oz Cup', 'PET 16oz cups for bubble tea line.', 'piece', 'SUP-0001',
+   0.60, 1.30, 480, 250, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (4001, 'PKG-0001', 4, 'Spaghetti Box', 'Packaging box for chicken servings.', 'piece', 'PKG-0001',
+   4.00, 4.00, 1000, 200, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (4002, 'PKG-0002', 4, 'Egg (Packaging)', 'Egg used for coating or garnish.', 'piece', 'PKG-0002',
+   5.00, 5.00, 1000, 200, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (4003, 'PKG-0003', 4, 'Aluminum Foil Sheet', 'Foil sheets for food wrap.', 'piece', 'PKG-0003',
+   2.00, 2.00, 1500, 300, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (4004, 'PKG-0004', 4, 'Paper Bag', 'Take-out paper bags.', 'piece', 'PKG-0004',
+  3.00, 3.00, 1200, 300, 1, 'Bonbon Pics/Logo.png', 1, 1);
+
+INSERT INTO `products`
+  (`product_id`, `client_product_id`, `category_id`, `name`, `description`, `unit`, `sku`,
+   `cost_price`, `selling_price`, `stock_quantity`, `reorder_level`, `supplier_id`, `image_url`, `is_active`, `created_by`)
+VALUES
+  (2010, 'BT-1010', 2, 'Brewed Assam Black Tea', 'Batch of brewed Assam tea.', 'batch', 'BT-1010',
+   0.00, 0.00, 8, 3, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2011, 'BT-1011', 2, 'Simple Syrup', 'Batch of simple syrup.', 'batch', 'BT-1011',
+   0.00, 0.00, 96, 20, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2012, 'BT-1012', 2, 'Milk Syrup (Prep)', 'Batch of milk syrup.', 'batch', 'BT-1012',
+   0.00, 0.00, 24, 10, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2013, 'BT-1013', 2, 'Brown Sugar Sauce', 'Batch of brown sugar sauce.', 'batch', 'BT-1013',
+   0.00, 0.00, 60, 15, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2014, 'BT-1014', 2, 'Brown Sugar Syrup (Prep)', 'Batch of muscovado syrup.', 'batch', 'BT-1014',
+   0.00, 0.00, 16, 6, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2015, 'BT-1015', 2, 'Tapioca Pearls (Prep)', 'Batch of cooked tapioca pearls.', 'batch', 'BT-1015',
+   0.00, 0.00, 11, 5, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2016, 'BT-1016', 2, 'Coffee Jelly (Prep)', 'Batch of coffee jelly.', 'batch', 'BT-1016',
+   0.00, 0.00, 13, 5, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2017, 'BT-1017', 2, 'Egg Pudding (Prep)', 'Batch of egg pudding.', 'batch', 'BT-1017',
+   0.00, 0.00, 20, 8, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2018, 'BT-1018', 2, 'Cream Puff (Prep)', 'Batch of cream puff.', 'batch', 'BT-1018',
+   0.00, 0.00, 10, 5, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2019, 'BT-1019', 2, 'Cream Cheese (Prep)', 'Batch of cream cheese.', 'batch', 'BT-1019',
+   0.00, 0.00, 8, 4, 1, 'Bonbon Pics/Logo.png', 1, 1),
+  (2020, 'BT-1020', 2, 'Rock Salt and Cheese (Prep)', 'Batch of rock salt and cheese.', 'batch', 'BT-1020',
+   0.00, 0.00, 6, 3, 1, 'Bonbon Pics/Logo.png', 1, 1);
 
 -- Variants for bubble tea drinks (small/medium/large)
 INSERT INTO `product_variants`
@@ -511,56 +546,91 @@ VALUES
 -- ---------------------------------------------------------------------
 
 INSERT INTO `ingredients`
-  (`ingredient_id`, `name`, `unit`, `unit_type`, `purchase_unit`, `purchase_price`, `cost_per_unit`, `current_stock`, `reorder_level`, `supplier`)
+  (`ingredient_id`, `name`, `unit`, `unit_type`, `purchase_unit`, `purchase_price`, `cost_per_unit`, `current_stock`, `reorder_level`)
 VALUES
   -- Chicken & Proteins
-  (5001, 'Chicken', 'pcs', 'count', '22pcs', 160.00, 7.2727, 500.0000, 100.0000, 'Local Supplier'),
+  (5001, 'Chicken', 'pcs', 'count', '22pcs', 160.00, 7.2727, 500.0000, 100.0000),
   
   -- Sauces & Condiments
-  (5002, 'Soy Sauce', 'ml', 'volume', '1L', 35.00, 0.0350, 5000.0000, 1000.0000, 'Local Supplier'),
-  (5003, 'Honey', 'ml', 'volume', '750ml', 130.00, 0.1733, 3000.0000, 500.0000, 'Local Supplier'),
-  (5004, 'Hot Sauce', 'ml', 'volume', '165g', 38.00, 0.2303, 500.0000, 100.0000, 'Local Supplier'),
-  (5005, 'Ketchup', 'ml', 'volume', '320g', 26.00, 0.0813, 1000.0000, 200.0000, 'Local Supplier'),
-  (5006, 'Gochujang', 'g', 'weight', '170g', 71.00, 0.4176, 500.0000, 100.0000, 'Korean Import'),
+  (5002, 'Soy Sauce', 'ml', 'volume', '1L', 35.00, 0.0350, 5000.0000, 1000.0000),
+  (5003, 'Honey', 'ml', 'volume', '750ml', 130.00, 0.1733, 3000.0000, 500.0000),
+  (5004, 'Hot Sauce', 'ml', 'volume', '165g', 38.00, 0.2303, 500.0000, 100.0000),
+  (5005, 'Ketchup', 'ml', 'volume', '320g', 26.00, 0.0813, 1000.0000, 200.0000),
+  (5006, 'Gochujang', 'g', 'weight', '170g', 71.00, 0.4176, 500.0000, 100.0000),
   
   -- Dairy & Cheese
-  (5007, 'Milk', 'ml', 'volume', '1L', 69.00, 0.0690, 2000.0000, 500.0000, 'Local Supplier'),
-  (5008, 'Butter', 'g', 'weight', '200g', 40.00, 0.2000, 1000.0000, 200.0000, 'Local Supplier'),
-  (5009, 'Cheese', 'g', 'weight', '500g', 91.00, 0.1820, 2000.0000, 500.0000, 'Local Supplier'),
-  (5010, 'Milk Powder', 'g', 'weight', '1000g', 259.00, 0.2590, 2000.0000, 500.0000, 'Local Supplier'),
-  (5011, 'Cheese Powder', 'g', 'weight', '100g', 55.00, 0.5500, 500.0000, 100.0000, 'Local Supplier'),
-  (5012, 'Mayo', 'g', 'weight', '3.5L', 700.00, 0.2011, 3000.0000, 500.0000, 'Local Supplier'),
+  (5007, 'Milk', 'ml', 'volume', '1L', 69.00, 0.0690, 2000.0000, 500.0000),
+  (5008, 'Butter', 'g', 'weight', '200g', 40.00, 0.2000, 1000.0000, 200.0000),
+  (5009, 'Cheese', 'g', 'weight', '500g', 91.00, 0.1820, 2000.0000, 500.0000),
+  (5010, 'Milk Powder', 'g', 'weight', '1000g', 259.00, 0.2590, 2000.0000, 500.0000),
+  (5011, 'Cheese Powder', 'g', 'weight', '100g', 55.00, 0.5500, 500.0000, 100.0000),
+  (5012, 'Mayo', 'g', 'weight', '3.5L', 700.00, 0.2011, 3000.0000, 500.0000),
   
   -- Spices & Seasonings
-  (5013, 'Salt', 'g', 'weight', '400g', 10.00, 0.0250, 2000.0000, 500.0000, 'Local Supplier'),
-  (5014, 'Garlic', 'g', 'weight', '500g', 40.00, 0.0800, 1000.0000, 200.0000, 'Local Supplier'),
-  (5015, 'Brown Sugar', 'g', 'weight', '1000g', 60.00, 0.0600, 2000.0000, 500.0000, 'Local Supplier'),
-  (5016, 'Sugar', 'g', 'weight', '1000g', 50.00, 0.0500, 2000.0000, 500.0000, 'Local Supplier'),
-  (5017, 'Powdered Sugar', 'g', 'weight', '450g', 85.00, 0.1889, 1000.0000, 200.0000, 'Local Supplier'),
-  (5018, 'Garlic Powder', 'g', 'weight', '1KG', 145.00, 0.1450, 500.0000, 100.0000, 'Local Supplier'),
-  (5019, 'Onion Powder', 'g', 'weight', '1KG', 205.00, 0.2050, 500.0000, 100.0000, 'Local Supplier'),
-  (5020, 'Chili Flakes', 'g', 'weight', '100g', 25.00, 0.2500, 200.0000, 50.0000, 'Local Supplier'),
-  (5021, 'Pepper', 'g', 'weight', '100g', 30.00, 0.3000, 200.0000, 50.0000, 'Local Supplier'),
-  (5022, 'Parsley', 'g', 'weight', '50g', 65.00, 1.3000, 200.0000, 50.0000, 'Local Supplier'),
-  (5023, 'Onion Springs', 'g', 'weight', '100g', 20.00, 0.2000, 200.0000, 50.0000, 'Local Supplier'),
+  (5013, 'Salt', 'g', 'weight', '400g', 10.00, 0.0250, 2000.0000, 500.0000),
+  (5014, 'Garlic', 'g', 'weight', '500g', 40.00, 0.0800, 1000.0000, 200.0000),
+  (5015, 'Brown Sugar', 'g', 'weight', '1000g', 60.00, 0.0600, 2000.0000, 500.0000),
+  (5016, 'Sugar', 'g', 'weight', '1000g', 50.00, 0.0500, 2000.0000, 500.0000),
+  (5017, 'Powdered Sugar', 'g', 'weight', '450g', 85.00, 0.1889, 1000.0000, 200.0000),
+  (5018, 'Garlic Powder', 'g', 'weight', '1KG', 145.00, 0.1450, 500.0000, 100.0000),
+  (5019, 'Onion Powder', 'g', 'weight', '1KG', 205.00, 0.2050, 500.0000, 100.0000),
+  (5020, 'Chili Flakes', 'g', 'weight', '100g', 25.00, 0.2500, 200.0000, 50.0000),
+  (5021, 'Pepper', 'g', 'weight', '100g', 30.00, 0.3000, 200.0000, 50.0000),
+  (5022, 'Parsley', 'g', 'weight', '50g', 65.00, 1.3000, 200.0000, 50.0000),
+  (5023, 'Onion Springs', 'g', 'weight', '100g', 20.00, 0.2000, 200.0000, 50.0000),
   
   -- Thickeners & Binders
-  (5024, 'Cornstarch', 'g', 'weight', '1000g', 38.00, 0.0380, 2000.0000, 500.0000, 'Local Supplier'),
-  (5025, 'Flour', 'g', 'weight', '1000g', 45.00, 0.0450, 2000.0000, 500.0000, 'Local Supplier'),
+  (5024, 'Cornstarch', 'g', 'weight', '1000g', 38.00, 0.0380, 2000.0000, 500.0000),
+  (5025, 'Flour', 'g', 'weight', '1000g', 45.00, 0.0450, 2000.0000, 500.0000),
   
   -- Special Ingredients
-  (5026, 'Salted Egg Powder', 'g', 'weight', '1kg', 669.00, 0.6690, 500.0000, 100.0000, 'Local Supplier'),
-  (5027, 'Mustard Paste', 'ml', 'volume', '200g', 85.00, 0.4250, 500.0000, 100.0000, 'Local Supplier'),
+  (5026, 'Salted Egg Powder', 'g', 'weight', '1kg', 669.00, 0.6690, 500.0000, 100.0000),
+  (5027, 'Mustard Paste', 'ml', 'volume', '200g', 85.00, 0.4250, 500.0000, 100.0000),
   
   -- Eggs & Coating
-  (5028, 'Egg', 'pcs', 'count', '30pcs', 150.00, 5.0000, 200.0000, 50.0000, 'Local Supplier'),
+  (5028, 'Egg', 'pcs', 'count', '30pcs', 150.00, 5.0000, 200.0000, 50.0000),
   
   -- Garnish
-  (5029, 'Garnish', 'serving', 'count', 'bulk', 1.00, 1.0000, 1000.0000, 200.0000, 'Local Supplier'),
+  (5029, 'Garnish', 'serving', 'count', 'bulk', 1.00, 1.0000, 1000.0000, 200.0000),
   
   -- Packaging
-  (5030, 'Spaghetti Box', 'pcs', 'count', 'bulk', 4.00, 4.0000, 1000.0000, 200.0000, 'Packaging Supplier'),
-  (5031, 'Water', 'ml', 'volume', 'bulk', 0.00, 0.0000, 10000.0000, 1000.0000, 'N/A');
+  (5030, 'Spaghetti Box', 'pcs', 'count', 'bulk', 4.00, 4.0000, 1000.0000, 200.0000),
+  (5031, 'Water', 'ml', 'volume', 'bulk', 0.00, 0.0000, 10000.0000, 1000.0000),
+  (5032, 'Orange Juice', 'ml', 'volume', '1L', 88.00, 0.0880, 1000.0000, 200.0000),
+  (5033, 'Vinegar', 'ml', 'volume', '1L', 44.00, 0.0440, 1000.0000, 200.0000);
+
+INSERT INTO `ingredients`
+  (`ingredient_id`, `name`, `unit`, `unit_type`, `purchase_unit`, `purchase_price`, `cost_per_unit`, `current_stock`, `reorder_level`)
+VALUES
+  (5034, 'Black Tea', 'ml', 'volume', '1L', 100.00, 0.1000, 5000.0000, 1000.0000),
+  (5035, 'Milk Syrup', 'ml', 'volume', '1L', 200.00, 0.2000, 2000.0000, 400.0000),
+  (5036, 'Non-Dairy Creamer', 'g', 'weight', '1KG', 250.00, 0.2500, 2000.0000, 400.0000),
+  (5037, 'Wintermelon Syrup', 'ml', 'volume', '1L', 180.00, 0.1800, 2000.0000, 400.0000),
+  (5038, 'Brown Sugar Syrup', 'ml', 'volume', '1L', 150.00, 0.1500, 2000.0000, 400.0000),
+  (5039, 'Matcha Powder', 'g', 'weight', '500g', 550.00, 1.1000, 1000.0000, 200.0000),
+  (5040, 'Taro Powder', 'g', 'weight', '500g', 400.00, 0.8000, 1000.0000, 200.0000),
+  (5041, 'Chocolate Syrup', 'ml', 'volume', '1L', 220.00, 0.2200, 2000.0000, 400.0000),
+  (5042, 'Strawberry Syrup', 'ml', 'volume', '1L', 240.00, 0.2400, 2000.0000, 400.0000),
+  (5043, 'Pearls', 'g', 'weight', '1KG', 160.00, 0.1600, 2000.0000, 400.0000),
+  (5044, '16oz Cup', 'pcs', 'count', '100pcs', 130.00, 1.3000, 100.0000, 50.0000),
+  (5045, 'Straw', 'pcs', 'count', '100pcs', 30.00, 0.3000, 100.0000, 50.0000),
+  (5046, 'Lid', 'pcs', 'count', '100pcs', 25.00, 0.2500, 100.0000, 50.0000),
+  (5047, 'Sticker', 'pcs', 'count', '100pcs', 20.00, 0.2000, 100.0000, 50.0000),
+  (5048, 'Plastic', 'pcs', 'count', '100pcs', 10.00, 0.1000, 100.0000, 50.0000);
+
+INSERT INTO `ingredients`
+  (`ingredient_id`, `name`, `unit`, `unit_type`, `purchase_unit`, `purchase_price`, `cost_per_unit`, `current_stock`, `reorder_level`)
+VALUES
+  (5049, 'Assam Loose Tea', 'g', 'weight', '250g', 0.00, 0.0000, 500.0000, 100.0000),
+  (5050, 'White Sugar', 'g', 'weight', '1KG', 0.00, 0.0000, 2000.0000, 400.0000),
+  (5051, 'Condensed Milk', 'ml', 'volume', '1L', 0.00, 0.0000, 500.0000, 200.0000),
+  (5052, 'Evaporated Milk', 'ml', 'volume', '1L', 0.00, 0.0000, 500.0000, 200.0000),
+  (5053, 'Muscovado', 'g', 'weight', '1KG', 0.00, 0.0000, 1000.0000, 200.0000),
+  (5054, 'Nescafe', 'g', 'weight', '250g', 0.00, 0.0000, 200.0000, 50.0000),
+  (5055, 'Jelly Powder', 'g', 'weight', '500g', 0.00, 0.0000, 200.0000, 50.0000),
+  (5056, 'Egg Pudding Powder', 'g', 'weight', '500g', 0.00, 0.0000, 500.0000, 100.0000),
+  (5057, 'Salted Cream Cheese', 'g', 'weight', '1KG', 0.00, 0.0000, 1000.0000, 200.0000),
+  (5058, 'Tapioca Pearls', 'g', 'weight', '1KG', 0.00, 0.0000, 2000.0000, 400.0000);
 
 -- ---------------------------------------------------------------------
 --  Recipes Data (from COST PER ORDER.xlsx)
@@ -727,6 +797,175 @@ VALUES
   (7011, 5029, 1.0000, 'serving', 1.0000), -- Garnish
   (7011, 5030, 1.0000, 'pcs', 4.0000);  -- Spaghetti Box
 
+INSERT INTO `recipes`
+  (`recipe_id`, `product_id`, `recipe_name`, `serving_size`, `total_cost`, `labor_cost`, `packaging_cost`, `total_recipe_cost`, `notes`)
+VALUES
+  (7101, 2001, 'Classic Milk Tea Recipe', '16oz', 18.00, 0.00, 0.00, 18.00, 'Classic blend with pearls'),
+  (7102, 2002, 'Wintermelon Milk Tea Recipe', '16oz', 20.00, 0.00, 0.00, 20.00, 'Wintermelon syrup base'),
+  (7103, 2003, 'Okinawa Milk Tea Recipe', '16oz', 20.00, 0.00, 0.00, 20.00, 'Brown sugar syrup base'),
+  (7104, 2004, 'Cookies & Cream Milk Tea Recipe', '16oz', 28.00, 0.00, 0.00, 28.00, 'Cookie crumble & chocolate'),
+  (7105, 2005, 'Matcha Milk Tea Recipe', '16oz', 26.00, 0.00, 0.00, 26.00, 'Matcha latte base'),
+  (7106, 2006, 'Taro Milk Tea Recipe', '16oz', 25.00, 0.00, 0.00, 25.00, 'Taro creamy base'),
+  (7107, 2007, 'Strawberry Milk Tea Recipe', '16oz', 24.00, 0.00, 0.00, 24.00, 'Strawberry syrup base'),
+  (7108, 2008, 'Chocolate Milk Tea Recipe', '16oz', 24.00, 0.00, 0.00, 24.00, 'Chocolate syrup base'),
+  (7109, 2009, 'Brown Sugar Milk Tea Recipe', '16oz', 32.00, 0.00, 0.00, 32.00, 'Brown sugar swirl');
+
+INSERT INTO `recipe_items`
+  (`recipe_id`, `ingredient_id`, `quantity`, `unit`, `cost_per_serving`)
+VALUES
+  (7101, 5034, 50.0000, 'ml', 5.0000),
+  (7101, 5035, 30.0000, 'ml', 6.0000),
+  (7101, 5036, 8.0000, 'g', 2.0000),
+  (7101, 5043, 17.0000, 'g', 2.7200),
+  (7101, 5031, 200.0000, 'ml', 0.0000),
+  (7101, 5044, 1.0000, 'pcs', 1.3000),
+  (7101, 5045, 1.0000, 'pcs', 0.3000),
+  (7101, 5046, 1.0000, 'pcs', 0.2500),
+  (7101, 5047, 1.0000, 'pcs', 0.2000),
+  (7101, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7102, 5034, 40.0000, 'ml', 4.0000),
+  (7102, 5037, 40.0000, 'ml', 7.2000),
+  (7102, 5036, 8.0000, 'g', 2.0000),
+  (7102, 5043, 15.0000, 'g', 2.4000),
+  (7102, 5031, 200.0000, 'ml', 0.0000),
+  (7102, 5044, 1.0000, 'pcs', 1.3000),
+  (7102, 5045, 1.0000, 'pcs', 0.3000),
+  (7102, 5046, 1.0000, 'pcs', 0.2500),
+  (7102, 5047, 1.0000, 'pcs', 0.2000),
+  (7102, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7103, 5034, 40.0000, 'ml', 4.0000),
+  (7103, 5038, 40.0000, 'ml', 6.0000),
+  (7103, 5036, 8.0000, 'g', 2.0000),
+  (7103, 5043, 15.0000, 'g', 2.4000),
+  (7103, 5031, 200.0000, 'ml', 0.0000),
+  (7103, 5044, 1.0000, 'pcs', 1.3000),
+  (7103, 5045, 1.0000, 'pcs', 0.3000),
+  (7103, 5046, 1.0000, 'pcs', 0.2500),
+  (7103, 5047, 1.0000, 'pcs', 0.2000),
+  (7103, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7104, 5034, 40.0000, 'ml', 4.0000),
+  (7104, 5041, 50.0000, 'ml', 11.0000),
+  (7104, 5036, 10.0000, 'g', 2.5000),
+  (7104, 5043, 20.0000, 'g', 3.2000),
+  (7104, 5031, 200.0000, 'ml', 0.0000),
+  (7104, 5044, 1.0000, 'pcs', 1.3000),
+  (7104, 5045, 1.0000, 'pcs', 0.3000),
+  (7104, 5046, 1.0000, 'pcs', 0.2500),
+  (7104, 5047, 1.0000, 'pcs', 0.2000),
+  (7104, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7105, 5039, 15.0000, 'g', 16.5000),
+  (7105, 5036, 5.0000, 'g', 1.2500),
+  (7105, 5031, 200.0000, 'ml', 0.0000),
+  (7105, 5044, 1.0000, 'pcs', 1.3000),
+  (7105, 5045, 1.0000, 'pcs', 0.3000),
+  (7105, 5046, 1.0000, 'pcs', 0.2500),
+  (7105, 5047, 1.0000, 'pcs', 0.2000),
+  (7105, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7106, 5040, 15.0000, 'g', 12.0000),
+  (7106, 5036, 5.0000, 'g', 1.2500),
+  (7106, 5031, 200.0000, 'ml', 0.0000),
+  (7106, 5044, 1.0000, 'pcs', 1.3000),
+  (7106, 5045, 1.0000, 'pcs', 0.3000),
+  (7106, 5046, 1.0000, 'pcs', 0.2500),
+  (7106, 5047, 1.0000, 'pcs', 0.2000),
+  (7106, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7107, 5034, 30.0000, 'ml', 3.0000),
+  (7107, 5042, 40.0000, 'ml', 9.6000),
+  (7107, 5036, 6.0000, 'g', 1.5000),
+  (7107, 5031, 200.0000, 'ml', 0.0000),
+  (7107, 5044, 1.0000, 'pcs', 1.3000),
+  (7107, 5045, 1.0000, 'pcs', 0.3000),
+  (7107, 5046, 1.0000, 'pcs', 0.2500),
+  (7107, 5047, 1.0000, 'pcs', 0.2000),
+  (7107, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7108, 5034, 30.0000, 'ml', 3.0000),
+  (7108, 5041, 40.0000, 'ml', 8.8000),
+  (7108, 5036, 6.0000, 'g', 1.5000),
+  (7108, 5031, 200.0000, 'ml', 0.0000),
+  (7108, 5044, 1.0000, 'pcs', 1.3000),
+  (7108, 5045, 1.0000, 'pcs', 0.3000),
+  (7108, 5046, 1.0000, 'pcs', 0.2500),
+  (7108, 5047, 1.0000, 'pcs', 0.2000),
+  (7108, 5048, 1.0000, 'pcs', 0.1000),
+
+  (7109, 5034, 30.0000, 'ml', 3.0000),
+  (7109, 5038, 60.0000, 'ml', 9.0000),
+  (7109, 5036, 6.0000, 'g', 1.5000),
+  (7109, 5043, 20.0000, 'g', 3.2000),
+  (7109, 5031, 200.0000, 'ml', 0.0000),
+  (7109, 5044, 1.0000, 'pcs', 1.3000),
+  (7109, 5045, 1.0000, 'pcs', 0.3000),
+  (7109, 5046, 1.0000, 'pcs', 0.2500),
+  (7109, 5047, 1.0000, 'pcs', 0.2000),
+  (7109, 5048, 1.0000, 'pcs', 0.1000);
+
+-- Production batch recipes
+INSERT INTO `recipes`
+  (`recipe_id`, `product_id`, `recipe_name`, `serving_size`, `total_cost`, `labor_cost`, `packaging_cost`, `total_recipe_cost`, `notes`)
+VALUES
+  (7201, 2010, 'Brewed Assam Black Tea Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=1000;portion_ml=200'),
+  (7202, 2011, 'Simple Syrup Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=960;portion_ml=10'),
+  (7203, 2012, 'Milk Syrup Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=670;portion_ml=20'),
+  (7204, 2013, 'Brown Sugar Sauce Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=1200;portion_ml=20'),
+  (7205, 2014, 'Brown Sugar Syrup Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=720;portion_ml=45'),
+  (7206, 2015, 'Tapioca Pearls Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_g=340;portion_g=30'),
+  (7207, 2016, 'Coffee Jelly Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=400;portion_ml=30'),
+  (7208, 2017, 'Egg Pudding Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_g=600;portion_g=20'),
+  (7209, 2018, 'Cream Puff Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=200;portion_ml=30'),
+  (7210, 2019, 'Cream Cheese Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_g=150;portion_g=30'),
+  (7211, 2020, 'Rock Salt and Cheese Batch', 'batch', 0.00, 0.00, 0.00, 0.00, 'yield_ml=200;portion_ml=30');
+
+INSERT INTO `recipe_items`
+  (`recipe_id`, `ingredient_id`, `quantity`, `unit`, `cost_per_serving`)
+VALUES
+  (7201, 5049, 20.0000, 'g', 0.0000),
+  (7201, 5031, 1000.0000, 'ml', 0.0000),
+
+  (7202, 5050, 1000.0000, 'g', 0.0000),
+  (7202, 5031, 500.0000, 'ml', 0.0000),
+
+  (7203, 5051, 485.0000, 'ml', 0.0000),
+  (7203, 5052, 185.0000, 'ml', 0.0000),
+
+  (7204, 5017, 1000.0000, 'g', 0.0000),
+  (7204, 5031, 500.0000, 'ml', 0.0000),
+
+  (7205, 5053, 500.0000, 'g', 0.0000),
+  (7205, 5031, 250.0000, 'ml', 0.0000),
+
+  (7206, 5058, 340.0000, 'g', 0.0000),
+  (7206, 5031, 3000.0000, 'ml', 0.0000),
+  (7206, 5038, 100.0000, 'ml', 0.0000),
+
+  (7207, 5054, 25.0000, 'g', 0.0000),
+  (7207, 5050, 45.0000, 'g', 0.0000),
+  (7207, 5055, 10.0000, 'g', 0.0000),
+  (7207, 5031, 350.0000, 'ml', 0.0000),
+
+  (7208, 5056, 100.0000, 'g', 0.0000),
+  (7208, 5031, 500.0000, 'ml', 0.0000),
+  (7208, 5035, 45.0000, 'ml', 0.0000),
+
+  (7209, 5057, 50.0000, 'g', 0.0000),
+  (7209, 5035, 15.0000, 'ml', 0.0000),
+  (7209, 5031, 130.0000, 'ml', 0.0000),
+
+  (7210, 5057, 75.0000, 'g', 0.0000),
+  (7210, 5013, 1.0000, 'g', 0.0000),
+  (7210, 5031, 75.0000, 'ml', 0.0000),
+
+  (7211, 5057, 38.0000, 'g', 0.0000),
+  (7211, 5013, 1.0000, 'g', 0.0000),
+  (7211, 5052, 75.0000, 'ml', 0.0000),
+  (7211, 5031, 75.0000, 'ml', 0.0000);
+
 -- Initial ingredient stock movements
 INSERT INTO `ingredient_movements`
   (`ingredient_id`, `movement_type`, `quantity_change`, `balance_after`, `reference_note`, `created_by`, `created_at`)
@@ -762,6 +1001,39 @@ VALUES
   (5029, 'stock-in', 1000.0000, 1000.0000, 'Initial garnish inventory', 1, '2024-11-20 08:00:00'),
   (5030, 'stock-in', 1000.0000, 1000.0000, 'Initial spaghetti box inventory', 1, '2024-11-20 08:00:00'),
   (5031, 'stock-in', 10000.0000, 10000.0000, 'Initial water inventory', 1, '2024-11-20 08:00:00');
+
+INSERT INTO `ingredient_movements`
+  (`ingredient_id`, `movement_type`, `quantity_change`, `balance_after`, `reference_note`, `created_by`, `created_at`)
+VALUES
+  (5034, 'stock-in', 5000.0000, 5000.0000, 'Initial black tea inventory', 1, '2024-11-21 09:00:00'),
+  (5035, 'stock-in', 2000.0000, 2000.0000, 'Initial milk syrup inventory', 1, '2024-11-21 09:00:00'),
+  (5036, 'stock-in', 2000.0000, 2000.0000, 'Initial non-dairy creamer inventory', 1, '2024-11-21 09:00:00'),
+  (5037, 'stock-in', 2000.0000, 2000.0000, 'Initial wintermelon syrup inventory', 1, '2024-11-21 09:00:00'),
+  (5038, 'stock-in', 2000.0000, 2000.0000, 'Initial brown sugar syrup inventory', 1, '2024-11-21 09:00:00'),
+  (5039, 'stock-in', 1000.0000, 1000.0000, 'Initial matcha powder inventory', 1, '2024-11-21 09:00:00'),
+  (5040, 'stock-in', 1000.0000, 1000.0000, 'Initial taro powder inventory', 1, '2024-11-21 09:00:00'),
+  (5041, 'stock-in', 2000.0000, 2000.0000, 'Initial chocolate syrup inventory', 1, '2024-11-21 09:00:00'),
+  (5042, 'stock-in', 2000.0000, 2000.0000, 'Initial strawberry syrup inventory', 1, '2024-11-21 09:00:00'),
+  (5043, 'stock-in', 2000.0000, 2000.0000, 'Initial pearls inventory', 1, '2024-11-21 09:00:00'),
+  (5044, 'stock-in', 100.0000, 100.0000, 'Initial 16oz cup inventory', 1, '2024-11-21 09:00:00'),
+  (5045, 'stock-in', 100.0000, 100.0000, 'Initial straw inventory', 1, '2024-11-21 09:00:00'),
+  (5046, 'stock-in', 100.0000, 100.0000, 'Initial lid inventory', 1, '2024-11-21 09:00:00'),
+  (5047, 'stock-in', 100.0000, 100.0000, 'Initial sticker inventory', 1, '2024-11-21 09:00:00'),
+  (5048, 'stock-in', 100.0000, 100.0000, 'Initial plastic inventory', 1, '2024-11-21 09:00:00');
+
+INSERT INTO `ingredient_movements`
+  (`ingredient_id`, `movement_type`, `quantity_change`, `balance_after`, `reference_note`, `created_by`, `created_at`)
+VALUES
+  (5049, 'stock-in', 500.0000, 500.0000, 'Initial Assam loose tea', 1, '2024-11-21 09:10:00'),
+  (5050, 'stock-in', 2000.0000, 2000.0000, 'Initial white sugar', 1, '2024-11-21 09:10:00'),
+  (5051, 'stock-in', 500.0000, 500.0000, 'Initial condensed milk', 1, '2024-11-21 09:10:00'),
+  (5052, 'stock-in', 500.0000, 500.0000, 'Initial evaporated milk', 1, '2024-11-21 09:10:00'),
+  (5053, 'stock-in', 1000.0000, 1000.0000, 'Initial muscovado', 1, '2024-11-21 09:10:00'),
+  (5054, 'stock-in', 200.0000, 200.0000, 'Initial nescafe coffee', 1, '2024-11-21 09:10:00'),
+  (5055, 'stock-in', 200.0000, 200.0000, 'Initial jelly powder', 1, '2024-11-21 09:10:00'),
+  (5056, 'stock-in', 500.0000, 500.0000, 'Initial egg pudding powder', 1, '2024-11-21 09:10:00'),
+  (5057, 'stock-in', 1000.0000, 1000.0000, 'Initial salted cream cheese', 1, '2024-11-21 09:10:00'),
+  (5058, 'stock-in', 2000.0000, 2000.0000, 'Initial tapioca pearls', 1, '2024-11-21 09:10:00');
 
 -- ---------------------------------------------------------------------
 --  Usage Notes:
