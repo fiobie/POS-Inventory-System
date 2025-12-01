@@ -1,0 +1,389 @@
+<?php include 'db_connection.php'; ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Bonbon Kitchen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="sidebar-user-info">
+                <img src="Bonbon Pics/Logo.png" alt="User avatar" class="sidebar-user-avatar" data-user-avatar data-default-avatar="Bonbon Pics/Logo.png">
+                <div class="sidebar-user-text">
+                    <span class="sidebar-user-name" data-user-name>Bonbon User</span>
+                    <small class="sidebar-user-email" data-user-email>user@example.com</small>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="dashboard.php" class="nav-item" data-page="dashboard">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="pos.php" class="nav-item" data-page="pos">
+                    <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span>
+                    <span class="nav-text">POS</span>
+                </a>
+                <a href="inventory.php" class="nav-item" data-page="inventory">
+                    <span class="nav-icon"><i class="fas fa-box"></i></span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="settings.php" class="nav-item active" data-page="settings">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="logout">
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span class="nav-text">Log Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content settings-main">
+            <header class="header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 class="page-title">Settings</h2>
+                <div class="user-profile">
+                    <div class="user-icon">
+                        <img src="Bonbon Pics/Logo.png" alt="User avatar" data-user-avatar data-default-avatar="Bonbon Pics/Logo.png">
+                    </div>
+                    <span class="user-name" id="userNameDisplay" data-user-name>User Name</span>
+                </div>
+            </header>
+
+            <section class="settings-tabs" role="tablist" aria-label="Settings tabs">
+                <button class="tab-btn active" data-tab="profile" role="tab" aria-selected="true">Profile</button>
+                <button class="tab-btn" data-tab="security" role="tab" aria-selected="false">Security</button>
+                <button class="tab-btn" data-tab="logs" role="tab" aria-selected="false">Access Logs</button>
+                <button class="tab-btn" data-tab="preferences" role="tab" aria-selected="false">Settings</button>
+            </section>
+
+            <!-- Profile Tab -->
+            <section class="tab-content active" id="profileTab" role="tabpanel">
+                <div class="profile-layout">
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <img src="https://placehold.co/120x120" alt="Profile" id="profileImagePreview">
+                            <div>
+                                <h3 id="profileFullName">Bonbon User</h3>
+                                <p id="profileEmailText">user@example.com</p>
+                            </div>
+                        </div>
+                        <button class="ghost-btn" id="changePhotoBtn">
+                            <i class="fas fa-camera"></i>
+                            Change Profile Picture
+                        </button>
+                        <input type="file" id="profileImageInput" accept="image/*" hidden>
+                        <p class="small-note">Use a square image for best results.</p>
+                    </div>
+
+                    <form class="profile-form" id="profileForm">
+                        <div class="form-grid two-column">
+                            <label class="form-field">
+                                <span>First Name</span>
+                                <input type="text" id="firstNameInput" required>
+                            </label>
+                            <label class="form-field">
+                                <span>Last Name</span>
+                                <input type="text" id="lastNameInput" required>
+                            </label>
+                            <label class="form-field">
+                                <span>Email Address</span>
+                                <input type="email" id="emailInput" required>
+                            </label>
+                            <label class="form-field">
+                                <span>Phone Number</span>
+                                <input type="tel" id="phoneInput" placeholder="+63 900 000 0000">
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">Save Changes</button>
+                            <span class="form-feedback" id="profileFeedback"></span>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Security Tab -->
+            <section class="tab-content" id="securityTab" role="tabpanel" aria-hidden="true">
+                <div class="security-layout">
+                    <div class="security-main">
+                        <form class="card" id="securityForm">
+                            <h3>Update Password</h3>
+                            <div class="form-grid two-column">
+                                <label class="form-field">
+                                    <span>Current Password</span>
+                                    <input type="password" id="currentPasswordInput" required>
+                                </label>
+                                <label class="form-field">
+                                    <span>New Password</span>
+                                    <input type="password" id="newPasswordInput" required>
+                                </label>
+                                <label class="form-field">
+                                    <span>Confirm New Password</span>
+                                    <input type="password" id="confirmPasswordInput" required>
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="primary-btn">Update Password</button>
+                                <span class="form-feedback" id="securityFeedback"></span>
+                            </div>
+                        </form>
+
+                        <div class="card security-options">
+                            <h3>Security Options</h3>
+                            <label class="toggle-row">
+                                <span>
+                                    <strong>Two-Factor Authentication</strong>
+                                    <small>Add a second step before logging in.</small>
+                                </span>
+                                <input type="checkbox" id="twoFactorToggle">
+                            </label>
+                            <label class="toggle-row">
+                                <span>
+                                    <strong>Login Alerts</strong>
+                                    <small>Notify me about logins from new devices.</small>
+                                </span>
+                                <input type="checkbox" id="loginAlertsToggle">
+                            </label>
+                            <p class="small-note">Last password change: <span id="lastPasswordChange">Never</span></p>
+                        </div>
+                    </div>
+
+                    <aside class="security-overview card">
+                        <h3>Security Overview</h3>
+                        <div class="overview-stats">
+                            <div class="overview-tile">
+                                <span class="tile-value" id="overviewSuccess">0</span>
+                                <span class="tile-label">Successful Logins</span>
+                            </div>
+                            <div class="overview-tile">
+                                <span class="tile-value" id="overviewFailed">0</span>
+                                <span class="tile-label">Failed Attempts</span>
+                            </div>
+                        </div>
+                        <div class="overview-last-login" id="lastLoginCard">
+                            <h4>Last Login</h4>
+                            <p class="last-login-date" id="lastLoginDate">No logins recorded</p>
+                            <p class="last-login-ip">IP: <span id="lastLoginIp">—</span></p>
+                        </div>
+                        <div class="overview-alert" id="securityAlertBox">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p id="securityAlertText">No failed login attempts detected.</p>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- Access Logs Tab -->
+            <section class="tab-content" id="logsTab" role="tabpanel" aria-hidden="true">
+                <div class="card logs-card full-width">
+                    <div class="logs-header">
+                        <div>
+                            <h3>Recent Access Logs</h3>
+                            <p class="logs-description">Track all login attempts, successful sessions, and remote logouts.</p>
+                        </div>
+                        <div class="logs-actions">
+                            <button class="ghost-btn" id="refreshLogsBtn"><i class="fas fa-rotate"></i> Refresh</button>
+                            <button class="ghost-btn" id="addDemoLogBtn"><i class="fas fa-plus"></i> Add Demo Log</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Email</th>
+                                    <th>Time Stamp</th>
+                                    <th>IP Address</th>
+                                    <th>Device</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accessLogsBody">
+                                <!-- logs injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preferences Tab -->
+            <section class="tab-content" id="preferencesTab" role="tabpanel" aria-hidden="true">
+                <div class="settings-layout-grid">
+                    <!-- Left Column: System Settings -->
+                    <div class="settings-left-column">
+                        <!-- System Settings -->
+                        <div class="card system-settings-card">
+                            <div class="settings-header">
+                                <i class="fas fa-cog"></i>
+                                <h3>System Settings</h3>
+                            </div>
+                            <form id="systemSettingsForm">
+                                <div class="settings-form-grid">
+                                    <label class="form-field">
+                                        <span>Language</span>
+                                        <div class="select-wrapper">
+                                            <select id="languageSelect" class="form-select">
+                                                <option value="en">English</option>
+                                                <option value="en-fil">English/Filipino</option>
+                                                <option value="fil">Filipino</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-icon"></i>
+                                        </div>
+                                    </label>
+                                    <label class="form-field">
+                                        <span>Date Format</span>
+                                        <div class="select-wrapper">
+                                            <select id="dateFormatSelect" class="form-select">
+                                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                                <option value="DD MMM YYYY">DD MMM YYYY</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-icon"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <!-- Date Picker Section -->
+                                <div class="date-picker-section">
+                                    <label class="form-field">
+                                        <span>Select Date</span>
+                                        <div class="date-input-wrapper">
+                                            <button type="button" class="calendar-btn" id="calendarToggleBtn" title="Open Calendar" data-tooltip="Open calendar picker">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                            <input type="date" id="datePickerInput" class="form-date-input" data-tooltip="Click to select a date">
+                                        </div>
+                                        <div class="date-preview">
+                                            <small>Preview: <span id="datePreview">—</span></small>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div class="settings-form-actions">
+                                    <button type="submit" class="primary-btn save-settings-btn">
+                                        <i class="fas fa-save"></i>
+                                        Save Settings
+                                    </button>
+                                    <span class="form-feedback" id="systemSettingsFeedback"></span>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- About App -->
+                        <div class="card about-app-card">
+                            <h3>About App</h3>
+                            <div class="about-app-content">
+                                <div class="about-item">
+                                    <span class="about-label">System Version:</span>
+                                    <span class="about-value" id="systemVersion">1.2.3</span>
+                                </div>
+                                <div class="about-item">
+                                    <span class="about-label">Developer:</span>
+                                    <span class="about-value" id="developerName">Bonbon Kitchen Development Team</span>
+                                </div>
+                                <div class="about-item">
+                                    <span class="about-label">Contact Support:</span>
+                                    <span class="about-value">
+                                        <a href="mailto:support@bonbonkitchen.com" class="support-link">support@bonbonkitchen.com</a>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Additional Settings -->
+                    <div class="settings-right-column">
+                        <!-- Time & Regional Settings -->
+                        <div class="card additional-settings-card">
+                            <div class="settings-header">
+                                <i class="fas fa-clock"></i>
+                                <h3>Time & Regional</h3>
+                            </div>
+                            <form id="regionalSettingsForm">
+                                <div class="settings-form-fields">
+                                    <label class="form-field">
+                                        <span>Time Format</span>
+                                        <div class="select-wrapper">
+                                            <select id="timeFormatSelect" class="form-select">
+                                                <option value="12h">12 Hour (AM/PM)</option>
+                                                <option value="24h">24 Hour</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-icon"></i>
+                                        </div>
+                                    </label>
+                                    <label class="form-field">
+                                        <span>Timezone</span>
+                                        <div class="select-wrapper">
+                                            <select id="timezoneSelect" class="form-select">
+                                                <option value="Asia/Manila">Asia/Manila (PHT)</option>
+                                                <option value="UTC">UTC</option>
+                                                <option value="America/New_York">America/New_York (EST)</option>
+                                                <option value="Europe/London">Europe/London (GMT)</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-icon"></i>
+                                        </div>
+                                    </label>
+                                    <label class="form-field">
+                                        <span>Currency</span>
+                                        <div class="select-wrapper">
+                                            <select id="currencySelect" class="form-select">
+                                                <option value="PHP">Philippine Peso (₱)</option>
+                                                <option value="USD">US Dollar ($)</option>
+                                                <option value="EUR">Euro (€)</option>
+                                                <option value="GBP">British Pound (£)</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-icon"></i>
+                                        </div>
+                                    </label>
+                                    <label class="form-field">
+                                        <span>Number Format</span>
+                                        <div class="select-wrapper">
+                                            <select id="numberFormatSelect" class="form-select">
+                                                <option value="1,234.56">1,234.56 (US)</option>
+                                                <option value="1.234,56">1.234,56 (EU)</option>
+                                                <option value="1 234,56">1 234,56 (FR)</option>
+                                            </select>
+                                            <i class="fas fa-chevron-down select-icon"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="settings-form-actions">
+                                    <button type="submit" class="primary-btn save-settings-btn">
+                                        <i class="fas fa-save"></i>
+                                        Save Regional Settings
+                                    </button>
+                                    <span class="form-feedback" id="regionalSettingsFeedback"></span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="user-profile.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>
+
