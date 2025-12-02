@@ -3,9 +3,10 @@ $host = "localhost";
 $user = "root";
 $password = "";
 $dbname = "bonbon_posandinventory_db";
+$port = 8080;
 
 try {
-    $conn = new mysqli($host, $user, $password, $dbname);
+    $conn = new mysqli($host, $user, $password, $dbname, port: $port);
     
     // Check connection
     if ($conn->connect_error) {

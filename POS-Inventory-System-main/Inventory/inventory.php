@@ -25,7 +25,7 @@ include '../Sidebar/db_connection.php';
             <div class="sidebar-user-info">
                 <img src="Bonbon Pics/Logo.png" alt="User avatar" class="sidebar-user-avatar" data-user-avatar data-default-avatar="Bonbon Pics/Logo.png">
                 <div class="sidebar-user-text">
-                    <span class="sidebar-user-name" data-user-name>Bonbon User</span>
+                    <span class="sidebar-user-name" data-user-name>Bonbon Kitchen</span>
                     <small class="sidebar-user-email" data-user-email>user@example.com</small>
                 </div>
             </div>
@@ -186,7 +186,7 @@ include '../Sidebar/db_connection.php';
             </div>
             <form class="modal-body" id="productForm">
                 <div class="form-group">
-                    <label for="productIdInput">Product ID:</label>
+                    <label for="productIdInput">Product ID</label>
                     <input type="text" id="productIdInput" class="form-input" placeholder="e.g. 0123456" required>
                 </div>
                 <div class="form-group">
