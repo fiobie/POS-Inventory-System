@@ -567,4 +567,3 @@ function setupEventListeners() {
 // Make functions available globally for onclick handlers
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
-
