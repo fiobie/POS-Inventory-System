@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - Bonbon Kitchen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="inventory.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close" id="sidebarClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="sidebar-user-info">
+                <img src="Bonbon Pics/Logo.png" alt="Logo" class="sidebar-user-avatar">
+                <div class="sidebar-user-text">
+                    <span class="sidebar-user-name">BonBon Kitchen</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item" data-page="dashboard">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="pos.html" class="nav-item" data-page="pos">
+                    <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span>
+                    <span class="nav-text">POS</span>
+                </a>
+                <a href="inventory.html" class="nav-item active" data-page="inventory">
+                    <span class="nav-icon"><i class="fas fa-box"></i></span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="settings.html" class="nav-item" data-page="settings">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="logout">
+                <a href="#" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span class="nav-text">Log Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 class="page-title">Inventory</h2>
+                <div class="user-profile">
+                    <div class="user-icon">
+                        <img src="Bonbon Pics/Logo.png" alt="Logo" data-user-avatar data-default-avatar="Bonbon Pics/Logo.png">
+                    </div>
+                    <span class="user-name" data-user-name>BonBon Kitchen</span>
+                </div>
+            </header>
+
+            <!-- Summary Cards -->
+            <section class="inventory-summary">
+                <div class="summary-card" id="productsInStockCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Products in Stock</h3>
+                        <span class="summary-icon"><i class="fas fa-box"></i></span>
+                    </div>
+                    <div class="summary-value" id="productsInStock">0</div>
+                </div>
+
+                <div class="summary-card" id="totalItemsCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Total Products</h3>
+                        <span class="summary-icon"><i class="fas fa-box"></i></span>
+                    </div>
+                    <div class="summary-value" id="totalItems">0</div>
+                </div>
+
+                <div class="summary-card" id="lowStockCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Low Stock</h3>
+                        <span class="summary-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                    </div>
+                    <div class="summary-value" id="lowStock">0</div>
+                </div>
+
+                <div class="summary-card" id="outOfStockCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Out of Stock</h3>
+                        <span class="summary-icon"><i class="fas fa-ban"></i></span>
+                    </div>
+                    <div class="summary-value" id="outOfStock">0</div>
+                </div>
+
+                <div class="summary-card" id="totalValueCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Total Value</h3>
+                        <span class="summary-icon"><i class="fas fa-peso-sign"></i></span>
+                    </div>
+                    <div class="summary-value" id="totalValue">₱0.00</div>
+                </div>
+                <div class="summary-card" id="lowIngredientsCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Low Ingredients</h3>
+                        <span class="summary-icon"><i class="fas fa-seedling"></i></span>
+                    </div>
+                    <div class="summary-value" id="lowIngredients">0</div>
+                </div>
+                <div class="summary-card" id="outIngredientsCard">
+                    <div class="summary-header">
+                        <h3 class="summary-title">Out of Ingredients</h3>
+                        <span class="summary-icon"><i class="fas fa-exclamation-circle"></i></span>
+                    </div>
+                    <div class="summary-value" id="outIngredients">0</div>
+                </div>
+            </section>
+
+            <!-- Add Product Button -->
+            <div class="add-product-section">
+                <button class="add-product-btn" id="addProductBtn">
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                </button>
+                
+            </div>
+
+            <!-- Products Details Section -->
+            <section class="products-details">
+                <div class="details-header">
+                    <h3 class="details-title">Products Details:</h3>
+                    <div class="details-controls">
+                        <div class="search-container">
+                            <input type="text" id="searchInput" class="search-input" placeholder="Search here">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <button class="clear-filters-btn" id="clearFiltersBtn">Clear filters</button>
+                        <div class="sort-container">
+                            <span class="sort-label">Sort by</span>
+                            <div class="sort-dropdown">
+                                <button class="sort-btn" id="sortBtn">
+                                    Category
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="sort-menu" id="sortMenu">
+                                    <a href="#" class="sort-item" data-sort="all">All Categories</a>
+                                    <!-- Categories will be dynamically populated -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="products-table" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>Product ID:</th>
+                                <th>Product Name:</th>
+                                <th>Category</th>
+                                <th>Price:</th>
+                                <th>Ingredients Stock</th>
+                                <th>Status</th>
+                                <th>Value</th>
+                                <th>Ingredients</th>
+                                <th>Recipe Cost</th>
+                                <th>Possible Servings</th>
+                                <th>Ingredients Short</th>
+                                <th>Actions:</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Products will be dynamically generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-box"></i>
+                    Add Product
+                </h3>
+                <button class="close-btn" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="modal-body" id="productForm">
+                <div class="form-group">
+                    <label for="productIdInput">Product ID:</label>
+                    <input type="text" id="productIdInput" class="form-input" placeholder="e.g. CHK-0001 (auto-generated)" required>
+                    <small class="form-hint">ID will be auto-generated based on category (CHK, BT, SUP, etc.)</small>
+                </div>
+                <div class="form-group">
+                    <label for="productNameInput">Product Name:</label>
+                    <input type="text" id="productNameInput" class="form-input" placeholder="e.g. Cup" required>
+                </div>
+                <div class="form-group">
+                    <label for="productCategoryInput">Category:</label>
+                    <div class="category-input-wrapper">
+                        <input type="text" id="productCategoryInput" class="form-input" list="categoryList" placeholder="Type or select category" required autocomplete="off">
+                        <datalist id="categoryList">
+                            <!-- Categories will be dynamically populated -->
+                        </datalist>
+                        <i class="fas fa-chevron-down category-dropdown-icon"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="productPriceInput">Price (₱):</label>
+                    <input type="number" id="productPriceInput" class="form-input" placeholder="e.g. 1.3" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="productStockInput">Stock:</label>
+                    <input type="number" id="productStockInput" class="form-input" placeholder="e.g. 50" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <div><span class="status-badge in-stock" id="productStatusPreview">In Stock</span></div>
+                </div>
+                <div class="form-group">
+                    <label>Value:</label>
+                    <div class="summary-value" id="productValuePreview">₱0.00</div>
+                </div>
+                <div class="form-group">
+                    <label>Ingredients per Serving:</label>
+                    <div id="productIngredientsPreview">-</div>
+                    <small class="form-hint">Matches table columns Ingredients / Possible Servings / Ingredients Short</small>
+                    <div style="margin-top:8px;">
+                        <button type="button" class="add-product-btn" id="editRecipeFromFormBtn"><i class="fas fa-utensils"></i> Edit Recipe</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Possible Servings:</label>
+                    <div id="productServingsPreview">-</div>
+                </div>
+                <div class="form-group">
+                    <label>Ingredients Short:</label>
+                    <div id="productShortPreview">-</div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="save-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recipe Editor Modal -->
+    <div class="modal-overlay" id="recipeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="recipeModalTitle">
+                    <i class="fas fa-utensils"></i>
+                    Edit Recipe
+                </h3>
+                <button class="close-btn" id="closeRecipeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="modal-body" id="recipeForm">
+                <div class="form-group">
+                    <label>Flavor/Product:</label>
+                    <input type="text" id="recipeProductName" class="form-input readonly" readonly>
+                    <small class="form-hint">Ingredients required per serving</small>
+                </div>
+                <div class="table-container">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>Ingredient Name</th>
+                                <th>Unit</th>
+                                <th>Qty per Serving</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipeTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" id="addRecipeRowBtn">Add Ingredient</button>
+                    <button type="button" class="cancel-btn" id="cancelRecipeBtn">Cancel</button>
+                    <button type="submit" class="save-btn">Save Recipe</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-question-circle"></i> Confirm Action</h3>
+                <button class="close-btn" id="closeConfirmBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+                <div class="modal-actions" style="display:flex;justify-content:center;gap:12px;">
+                    <button class="primary-btn" id="confirmYesBtn">Yes</button>
+                    <button class="secondary-btn" id="confirmNoBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="noticeModal">
+        <div class="modal-content notice-modal">
+            <div class="modal-header">
+                <h3 id="noticeTitle"><i class="fas fa-info-circle"></i> Notice</h3>
+                <button class="close-btn" id="closeNoticeBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="noticeMessage"></p>
+                <div class="modal-actions" style="display:flex;justify-content:center;gap:12px;">
+                    <button class="primary-btn" id="noticeOkBtn">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="ingredientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="ingredientModalTitle"><i class="fas fa-tools"></i> Manage Ingredient Stock</h3>
+                <button class="close-btn" id="closeIngredientModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="modal-body" id="ingredientForm">
+                <div id="ingredientFormBody"></div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" id="cancelIngredientModalBtn">Cancel</button>
+                    <button type="submit" class="save-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="core/utils.js"></script>
+    <script src="core/sidebar-manager.js"></script>
+    <script src="user-profile.js"></script>
+    <script src="inventory.js"></script>
+</body>
+</html>
