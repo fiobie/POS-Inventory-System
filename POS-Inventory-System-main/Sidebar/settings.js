@@ -763,10 +763,10 @@ function setupLogButtons() {
                 id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `sess-${Date.now()}`,
                 email: 'demo@bonbonkitchen.com',
                 timestamp: now.toISOString(),
-                device: 'Chrome on Android',
+                device: ' on Android',
                 ip: `192.168.1.${Math.floor(Math.random() * 80) + 10}`,
                 status: 'success',
-                active: true
+                active: trueChrome
             };
             accessLogs.unshift(newLog);
             saveAccessLogs();

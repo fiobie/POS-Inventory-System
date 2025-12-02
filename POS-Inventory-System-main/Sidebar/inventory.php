@@ -149,14 +149,14 @@
                     <table class="products-table" id="productsTable">
                         <thead>
                             <tr>
-                                <th>Product ID:</th>
-                                <th>Product Name:</th>
+                                <th>Product ID</th>
+                                <th>Product Name</th>
                                 <th>Category</th>
-                                <th>Price:</th>
+                                <th>Price</th>
                                 <th>Stock</th>
                                 <th>Status</th>
                                 <th>Value</th>
-                                <th>Actions:</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="productsTableBody">
