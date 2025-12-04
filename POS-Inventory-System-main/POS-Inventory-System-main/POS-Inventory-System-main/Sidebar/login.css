@@ -1,0 +1,444 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.login-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Left Section - Logo/Landscape */
+.logo-section {
+    flex: 0 0 40%;
+    background: #FFD700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+}
+
+.logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Landscape Background for Forgot Password Pages */
+.landscape-bg {
+    background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 50%, #90EE90 50%, #90EE90 100%);
+}
+
+.landscape-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.cloud {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 60px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.cloud::before,
+.cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+}
+
+.cloud::before {
+    width: 80px;
+    height: 80px;
+    top: -40px;
+    left: 20px;
+}
+
+.cloud::after {
+    width: 70px;
+    height: 70px;
+    top: -35px;
+    right: 20px;
+}
+
+.hill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.hill-light {
+    height: 35%;
+    background: #98FB98;
+    bottom: 0;
+}
+
+.hill-dark {
+    height: 25%;
+    background: #228B22;
+    bottom: 0;
+}
+
+/* Right Section - Form */
+.form-section {
+    flex: 1;
+    background: #FFF8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 450px;
+}
+
+.welcome-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #8B0000;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-text.centered {
+    text-align: center;
+    font-size: 1.8rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.form-title {
+    font-size: 1.5rem;
+    color: #8B0000;
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.form-subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.auth-form {
+    width: 100%;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    background: #F5F5F5;
+    color: #8B0000;
+    font-style: italic;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #FF8C00;
+    background: #FFF;
+    font-style: normal;
+}
+
+.form-input::placeholder {
+    color: #8B0000;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #666;
+    font-size: 1.2rem;
+}
+
+.toggle-password:hover {
+    color: #8B0000;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #8B0000;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #000;
+}
+
+.forgot-link {
+    color: #8B0000;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: #FF8C00;
+    text-decoration: underline;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #8B0000;
+    background: #FF8C00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.submit-btn:hover {
+    background: #FF7F00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.signup-link p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.signup-link a {
+    color: #8B0000;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.signup-link a:hover {
+    color: #FF8C00;
+    text-decoration: underline;
+}
+
+.skip-link {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.skip-code-link {
+    color: #8B0000;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.skip-code-link:hover {
+    color: #FF8C00;
+    text-decoration: underline;
+}
+
+/* Code Input */
+.code-input-group {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.code-input {
+    width: 50px;
+    height: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    background: #FFF;
+    color: #8B0000;
+    transition: all 0.3s ease;
+}
+
+.code-input:focus {
+    outline: none;
+    border-color: #FF8C00;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+}
+
+.timer-text {
+    text-align: center;
+    color: #8B0000;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+.timer-text #timer {
+    font-weight: bold;
+}
+
+.error-message {
+    background: #FFE5E5;
+    color: #8B0000;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.success-message {
+    background: #E5FFE5;
+    color: #006400;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .logo-section {
+        flex: 0 0 30%;
+        min-height: 200px;
+    }
+
+    .form-section {
+        flex: 1;
+        padding: 1.5rem;
+    }
+
+    .welcome-text {
+        font-size: 2rem;
+    }
+
+    .welcome-text.centered {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .logo-section {
+        flex: 0 0 25%;
+        min-height: 150px;
+    }
+
+    .form-wrapper {
+        max-width: 100%;
+    }
+
+    .welcome-text {
+        font-size: 1.75rem;
+    }
+
+    .welcome-text.centered {
+        font-size: 1.3rem;
+    }
+
+    .form-title {
+        font-size: 1.25rem;
+    }
+
+    .code-input-group {
+        gap: 0.5rem;
+    }
+
+    .code-input {
+        width: 40px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-section {
+        flex: 0 0 20%;
+        min-height: 120px;
+    }
+
+    .welcome-text {
+        font-size: 1.5rem;
+    }
+
+    .welcome-text.centered {
+        font-size: 1.1rem;
+    }
+
+    .code-input {
+        width: 35px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+}
+

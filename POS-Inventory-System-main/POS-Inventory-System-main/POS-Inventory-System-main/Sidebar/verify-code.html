@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Code - Bonbon Kitchen</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Side - Landscape Background -->
+        <div class="logo-section landscape-bg">
+            <div class="landscape-content">
+                <div class="cloud"></div>
+                <div class="hill hill-light"></div>
+                <div class="hill hill-dark"></div>
+            </div>
+        </div>
+
+        <!-- Right Side - Verify Code Form -->
+        <div class="form-section">
+            <div class="form-wrapper">
+                <h1 class="welcome-text centered">The code is sent on your<br>E-Mail. Kindly put them<br>in the box below.</h1>
+                
+                <form id="verifyCodeForm" class="auth-form">
+                    <div class="code-input-group">
+                        <input 
+                            type="text" 
+                            id="code1" 
+                            name="code1" 
+                            maxlength="1" 
+                            class="code-input"
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="code2" 
+                            name="code2" 
+                            maxlength="1" 
+                            class="code-input"
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="code3" 
+                            name="code3" 
+                            maxlength="1" 
+                            class="code-input"
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="code4" 
+                            name="code4" 
+                            maxlength="1" 
+                            class="code-input"
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="code5" 
+                            name="code5" 
+                            maxlength="1" 
+                            class="code-input"
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="code6" 
+                            name="code6" 
+                            maxlength="1" 
+                            class="code-input"
+                            required
+                        >
+                    </div>
+
+                    <div class="timer-text" id="timerText">The code will expire in <span id="timer">5:00</span></div>
+
+                    <button type="submit" class="submit-btn">Confirm Password</button>
+                </form>
+
+                <div class="signup-link">
+                    <p><a href="forgot-password.html">Resend Code</a> | <a href="login.html">Back to Sign In</a></p>
+                </div>
+
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
+

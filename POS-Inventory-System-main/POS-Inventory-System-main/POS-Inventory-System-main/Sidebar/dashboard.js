@@ -54,6 +54,7 @@ function setupSidebarToggle() {
     });
 }
 
+// Logout confirmation + success modals
 // Setup navigation functionality
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item[data-page]');

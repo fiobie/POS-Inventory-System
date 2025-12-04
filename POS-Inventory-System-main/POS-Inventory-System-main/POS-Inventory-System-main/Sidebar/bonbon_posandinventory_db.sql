@@ -81,6 +81,18 @@ CREATE TABLE `user_access_logs` (
     ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE `password_reset_codes` (
+  `reset_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(120) NOT NULL,
+  `code` VARCHAR(6) NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `used` TINYINT(1) DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`reset_id`),
+  KEY `idx_reset_email` (`email`),
+  KEY `idx_reset_code` (`code`)
+) ENGINE=InnoDB;
+
 CREATE TABLE `product_categories` (
   `category_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `slug` VARCHAR(40) NOT NULL UNIQUE,

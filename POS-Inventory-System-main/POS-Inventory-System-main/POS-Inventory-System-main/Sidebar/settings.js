@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyAllSettings();
 });
 
+// Resolve correct API path whether we're on *.html (Sidebar/) or *.php (Sidebar/api/)
+function apiPath(script) {
+    return window.location.pathname.includes('/api/')
+        ? script
+        : `api/${script}`;
+}
+
 function applyAllSettings() {
     // Apply all settings immediately on page load
     applySystemSettings();
@@ -154,7 +161,7 @@ function initializeProfileSection() {
         profileImagePreview.src = profileData.photo;
     }
 
-    profileForm.addEventListener('submit', (event) => {
+    profileForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         profileData = {
             ...profileData,
@@ -164,9 +171,36 @@ function initializeProfileSection() {
             phone: phoneInput.value.trim()
         };
 
+        // Save locally for instant UI updates
         saveProfileData();
         updateProfileIdentity(profileFullName, profileEmailText, userNameDisplay);
-        showFeedback(feedback, 'Profile updated successfully!');
+
+        // Also send to backend to store in `users` table
+        try {
+            const res = await fetch(apiPath('settings.php'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_profile',
+                    firstName: profileData.firstName,
+                    lastName: profileData.lastName,
+                    email: profileData.email,
+                    phone: profileData.phone
+                })
+            });
+
+            if (!res.ok) {
+                const errJson = await res.json().catch(() => ({}));
+                const msg = settingsErrorMessage(errJson.error || 'server_error');
+                showFeedback(feedback, msg, false, true);
+                return;
+            }
+
+            showFeedback(feedback, 'Profile saved to database successfully!', true);
+        } catch (e) {
+            showFeedback(feedback, settingsErrorMessage('network_error'), false, true);
+        }
+
         document.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
     });
 
@@ -181,25 +215,55 @@ function updateProfileIdentity(nameEl, emailEl, headerNameEl) {
     headerNameEl.textContent = fullName;
 }
 
-function handleProfileImageChange(event) {
+async function handleProfileImageChange(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-        profileData.photo = reader.result;
-        document.getElementById('profileImagePreview').src = reader.result;
-        saveProfileData();
-        showFeedback(document.getElementById('profileFeedback'), 'Profile picture updated!');
+    const feedbackEl = document.getElementById('profileFeedback');
+
+    // Preview immediately
+    const localUrl = URL.createObjectURL(file);
+    document.getElementById('profileImagePreview').src = localUrl;
+
+    // Upload to backend so avatar_url is stored in DB
+    const formData = new FormData();
+    formData.append('avatar', file);
+    // Use correct path whether we are on settings.php (in api/) or settings.html (in Sidebar/)
+    const avatarEndpoint = window.location.pathname.includes('/api/')
+        ? 'upload_avatar.php'
+        : 'api/upload_avatar.php';
+
+    try {
+        const res = await fetch(avatarEndpoint, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            const msg = settingsErrorMessage(errJson.error || 'server_error');
+            showFeedback(feedbackEl, msg, false, true);
+            return;
+        }
+
+        const json = await res.json();
+        if (json.avatarUrl) {
+            // Store the URL returned by backend
+            profileData.photo = json.avatarUrl;
+            document.getElementById('profileImagePreview').src = json.avatarUrl;
+            saveProfileData();
+        }
+
+        showFeedback(feedbackEl, 'Profile picture updated!', true);
         document.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
-    };
-    reader.readAsDataURL(file);
+    } catch (e) {
+        showFeedback(feedbackEl, settingsErrorMessage('network_error'), false, true);
+    }
 }
 
 /* ---------- Security ---------- */
 function loadSecurityData() {
     const fallback = {
-        password: 'Bonbon123!',
         twoFactor: false,
         loginAlerts: true,
         lastPasswordChange: null
@@ -230,16 +294,11 @@ function initializeSecuritySection() {
         ? new Date(securityData.lastPasswordChange).toLocaleString()
         : 'Never';
 
-    securityForm.addEventListener('submit', (event) => {
+    securityForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const current = document.getElementById('currentPasswordInput').value;
         const next = document.getElementById('newPasswordInput').value;
         const confirm = document.getElementById('confirmPasswordInput').value;
-
-        if (current !== securityData.password) {
-            showFeedback(feedback, 'Current password is incorrect.', true);
-            return;
-        }
 
         if (next.length < 8) {
             showFeedback(feedback, 'New password must be at least 8 characters.', true);
@@ -251,23 +310,65 @@ function initializeSecuritySection() {
             return;
         }
 
-        securityData.password = next;
-        securityData.lastPasswordChange = new Date().toISOString();
-        saveSecurityData();
-        lastPasswordChange.textContent = new Date(securityData.lastPasswordChange).toLocaleString();
-        securityForm.reset();
-        showFeedback(feedback, 'Password updated successfully!');
+        try {
+            const res = await fetch(apiPath('settings.php'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'change_password',
+                    currentPassword: current,
+                    newPassword: next
+                })
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok || json.error) {
+                const code = json.error || 'server_error';
+                const map = {
+                    invalid_current_password: 'Current password is incorrect.',
+                    weak_password: 'New password must be at least 8 characters.',
+                    missing_password: 'Please fill in all password fields.'
+                };
+                const msg = map[code] || settingsErrorMessage(code);
+                showFeedback(feedback, msg, true);
+                return;
+            }
+            securityData.lastPasswordChange = json.lastPasswordChange || new Date().toISOString();
+            saveSecurityData();
+            lastPasswordChange.textContent = new Date(securityData.lastPasswordChange).toLocaleString();
+            securityForm.reset();
+            showFeedback(feedback, 'Password updated successfully!');
+        } catch (e) {
+            showFeedback(feedback, settingsErrorMessage('network_error'), true);
+        }
     });
 
     twoFactorToggle.addEventListener('change', () => {
         securityData.twoFactor = twoFactorToggle.checked;
         saveSecurityData();
+        saveSecuritySettings();
     });
 
     loginAlertsToggle.addEventListener('change', () => {
         securityData.loginAlerts = loginAlertsToggle.checked;
         saveSecurityData();
+        saveSecuritySettings();
     });
+}
+
+async function saveSecuritySettings() {
+    try {
+        await fetch(apiPath('settings.php'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'save_security_settings',
+                twoFactor: !!securityData.twoFactor,
+                loginAlerts: !!securityData.loginAlerts
+            })
+        });
+    } catch (_) {
+        // Silent fail; toggles still stored locally
+    }
 }
 
 /* ---------- System Settings ---------- */
@@ -289,7 +390,7 @@ function loadSystemSettings() {
 async function saveSystemSettings() {
     const feedbackEl = document.getElementById('systemSettingsFeedback');
     try {
-        const res = await fetch('api/settings.php', {
+        const res = await fetch(apiPath('settings.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'save_system_settings', language: systemSettings.language, dateFormat: systemSettings.dateFormat })
@@ -541,7 +642,7 @@ function loadRegionalSettings() {
 async function saveRegionalSettings() {
     const feedbackEl = document.getElementById('regionalSettingsFeedback');
     try {
-        const res = await fetch('api/settings.php', {
+        const res = await fetch(apiPath('settings.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'save_regional_settings', timeFormat: regionalSettings.timeFormat, timezone: regionalSettings.timezone, currency: regionalSettings.currency, numberFormat: regionalSettings.numberFormat })
@@ -742,7 +843,7 @@ function loadPreferences() {
 
 async function savePreferences() {
     try {
-        const res = await fetch('api/settings.php', {
+        const res = await fetch(apiPath('settings.php'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'save_preferences', notifications: preferencesData.notifications, autoUpdate: preferencesData.autoUpdate, dataSharing: preferencesData.dataSharing, theme: preferencesData.theme })
@@ -857,7 +958,7 @@ function setupLogButtons() {
     if (addDemoBtn) {
         addDemoBtn.addEventListener('click', async () => {
             try {
-                const res = await fetch('api/settings.php', {
+        const res = await fetch(apiPath('settings.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'add_demo_log' })
@@ -958,9 +1059,26 @@ function logoutSession(sessionId) {
 
 async function loadSettingsFromBackend() {
     try {
-        const res = await fetch('api/settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_settings' }) });
+        const res = await fetch(apiPath('settings.php'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_settings' }) });
         if (!res.ok) return;
         const json = await res.json();
+        if (json.profile) {
+            profileData = {
+                ...profileData,
+                firstName: json.profile.firstName || '',
+                lastName: json.profile.lastName || '',
+                email: json.profile.email || '',
+                phone: json.profile.phone || '',
+                photo: json.profile.avatarUrl || profileData.photo || ''
+            };
+            saveProfileData();
+        }
+        if (json.security) {
+            securityData.twoFactor = !!json.security.twoFactor;
+            securityData.loginAlerts = !!json.security.loginAlerts;
+            securityData.lastPasswordChange = json.security.lastPasswordChange || securityData.lastPasswordChange;
+            saveSecurityData();
+        }
         if (json.system) {
             systemSettings = { language: json.system.language || 'en', dateFormat: json.system.dateFormat || 'MM/DD/YYYY' };
             localStorage.setItem(SYSTEM_SETTINGS_STORAGE_KEY, JSON.stringify(systemSettings));
@@ -974,7 +1092,15 @@ async function loadSettingsFromBackend() {
             localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferencesData));
         }
         if (Array.isArray(json.logs)) {
-            accessLogs = json.logs.map((l, idx) => ({ id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `log-${idx}-${Date.now()}`, email: '—', timestamp: l.timestamp, ip: l.ip, device: l.device, status: l.status, active: l.status === 'success' && !l.loggedOutAt }));
+            accessLogs = json.logs.map((l, idx) => ({
+                id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `log-${idx}-${Date.now()}`,
+                email: l.email || '—',
+                timestamp: l.timestamp,
+                ip: l.ip,
+                device: l.device,
+                status: l.status,
+                active: l.status === 'success' && !l.loggedOutAt
+            }));
             saveAccessLogs();
         }
     } catch (e) {}
@@ -982,7 +1108,7 @@ async function loadSettingsFromBackend() {
 
 async function fetchLogsFromBackend() {
     try {
-        const res = await fetch('api/settings.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_logs' }) });
+        const res = await fetch(apiPath('settings.php'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_logs' }) });
         if (!res.ok) { return []; }
         const json = await res.json();
         const list = Array.isArray(json.logs) ? json.logs : [];
@@ -1155,7 +1281,7 @@ function initializeArchivesSection() {
         if (from) params.append('from', from);
         if (to) params.append('to', to);
         try {
-            const endpoint = type === 'orders' ? 'api/pos.php' : 'api/inventory.php';
+            const endpoint = type === 'orders' ? apiPath('pos.php') : apiPath('inventory.php');
             const json = await NetUtils.fetchJson(`${endpoint}?${params.toString()}`, {}, { ttl: 3000, retries: 1, key: `archives:${type}:${params.toString()}` });
             const rows = Array.isArray(json.rows) ? json.rows : [];
             render(rows);
@@ -1195,7 +1321,7 @@ function initializeArchivesSection() {
             else if (type === 'ingredients') payload.action = 'restore_ingredient';
             else if (type === 'recipes') payload.action = 'restore_recipe';
             else return;
-            const res = await fetch('api/inventory.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const res = await fetch(apiPath('inventory.php'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             let json = {};
             try { json = await res.json(); } catch (_) { json = {}; }
             if (!res.ok || (json && json.error)) {

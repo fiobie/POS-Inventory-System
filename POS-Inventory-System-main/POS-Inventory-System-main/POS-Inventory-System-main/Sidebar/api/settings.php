@@ -4,8 +4,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     $action = isset($input['action']) ? $input['action'] : '';
-    $ok = function($data) { echo json_encode($data); exit; };
-    $err = function($code, $http = 400) { http_response_code($http); echo json_encode(['error' => $code]); exit; };
+$ok = function($data) { echo json_encode($data); exit; };
+$err = function($code, $http = 400, $extra = []) { http_response_code($http); echo json_encode(array_merge(['error' => $code], $extra)); exit; };
     $userId = 1;
 
     $ensureSettingsRow = function(PDO $pdo, $uid) {
@@ -24,10 +24,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $settingsStmt->execute([$userId]);
             $s = $settingsStmt->fetch();
             if (!$s) { $ensureSettingsRow($pdo, $userId); $settingsStmt->execute([$userId]); $s = $settingsStmt->fetch(); }
-            $logsStmt = $pdo->prepare('SELECT status, ip_address, device_info, notes, logged_in_at, logged_out_at FROM user_access_logs WHERE user_id = ? ORDER BY log_id DESC LIMIT 200');
+
+            $profileStmt = $pdo->prepare('SELECT first_name, last_name, email, phone, avatar_url, last_login_at, created_at, updated_at FROM users WHERE user_id = ? LIMIT 1');
+            $profileStmt->execute([$userId]);
+            $profile = $profileStmt->fetch() ?: [];
+
+            $logsStmt = $pdo->prepare('SELECT l.status, l.ip_address, l.device_info, l.notes, l.logged_in_at, l.logged_out_at, u.email FROM user_access_logs l LEFT JOIN users u ON u.user_id = l.user_id WHERE l.user_id = ? ORDER BY l.log_id DESC LIMIT 200');
             $logsStmt->execute([$userId]);
             $logs = $logsStmt->fetchAll();
             $ok([
+                'profile' => [
+                    'firstName' => $profile['first_name'] ?? '',
+                    'lastName' => $profile['last_name'] ?? '',
+                    'email' => $profile['email'] ?? '',
+                    'phone' => $profile['phone'] ?? '',
+                    'avatarUrl' => $profile['avatar_url'] ?? null,
+                ],
+                'security' => [
+                    'twoFactor' => (bool)($s['two_factor_enabled'] ?? 0),
+                    'loginAlerts' => (bool)($s['login_alerts_enabled'] ?? 1),
+                    'lastPasswordChange' => $s['last_password_change'] ?? null,
+                ],
                 'system' => [
                     'language' => $s['language_code'] ?? 'en',
                     'dateFormat' => $s['date_format'] ?? 'MM/DD/YYYY'
@@ -47,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'logs' => array_map(function($l) {
                     return [
                         'status' => $l['status'],
+                        'email' => $l['email'] ?? null,
                         'ip' => $l['ip_address'],
                         'device' => $l['device_info'],
                         'notes' => $l['notes'],
@@ -55,6 +73,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ];
                 }, $logs)
             ]);
+        } break;
+        case 'change_password': {
+            $current = (string)($input['currentPassword'] ?? '');
+            $next    = (string)($input['newPassword'] ?? '');
+            if ($current === '' || $next === '') { $err('missing_password', 422); }
+            if (strlen($next) < 8) { $err('weak_password', 422); }
+            $userStmt = $pdo->prepare('SELECT password_hash FROM users WHERE user_id = ? LIMIT 1');
+            $userStmt->execute([$userId]);
+            $user = $userStmt->fetch();
+            if (!$user || !password_verify($current, $user['password_hash'])) {
+                $err('invalid_current_password', 422);
+            }
+            $hash = password_hash($next, PASSWORD_BCRYPT);
+            $pdo->beginTransaction();
+            try {
+                $upd = $pdo->prepare('UPDATE users SET password_hash = ? WHERE user_id = ?');
+                $upd->execute([$hash, $userId]);
+                $ensureSettingsRow($pdo, $userId);
+                $updSettings = $pdo->prepare('UPDATE user_settings SET last_password_change = NOW() WHERE user_id = ?');
+                $updSettings->execute([$userId]);
+                $pdo->commit();
+            } catch (Throwable $e) {
+                $pdo->rollBack();
+                $err('db_error', 500);
+            }
+            $ok(['status' => 'success', 'lastPasswordChange' => date('c')]);
+        } break;
+        case 'save_security_settings': {
+            $twoFactor = !empty($input['twoFactor']) ? 1 : 0;
+            $loginAlerts = !empty($input['loginAlerts']) ? 1 : 0;
+            $ensureSettingsRow($pdo, $userId);
+            $upd = $pdo->prepare('UPDATE user_settings SET two_factor_enabled = ?, login_alerts_enabled = ? WHERE user_id = ?');
+            $upd->execute([$twoFactor, $loginAlerts, $userId]);
+            $ok(['status' => 'success']);
         } break;
         case 'save_system_settings': {
             $lang = trim($input['language'] ?? 'en');
@@ -98,13 +150,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $upd->execute([$notif, $auto, $share, $theme, $userId]);
             $ok(['status' => 'success']);
         } break;
+        case 'save_profile': {
+            $firstName = trim($input['firstName'] ?? '');
+            $lastName  = trim($input['lastName'] ?? '');
+            $email     = trim($input['email'] ?? '');
+            $phone     = trim($input['phone'] ?? '');
+
+            if ($firstName === '' || $lastName === '') {
+                $err('invalid_name', 422);
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $err('invalid_email', 422);
+            }
+
+            // Profile Update Functionality
+            $checkUser = $pdo->prepare('SELECT user_id FROM users WHERE user_id = ? LIMIT 1');
+            $checkUser->execute([$userId]);
+
+            if (!$checkUser->fetch()) {
+                
+                $insertUser = $pdo->prepare(
+                    'INSERT INTO users (user_id, first_name, last_name, email, phone, password_hash, role, status)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                );
+                $dummyPasswordHash = password_hash('Bonbon123!', PASSWORD_BCRYPT);
+                $insertUser->execute([
+                    $userId,
+                    $firstName,
+                    $lastName,
+                    $email,
+                    $phone,
+                    $dummyPasswordHash,
+                    'admin',
+                    'active'
+                ]);
+            } else {
+                // Later saves: only update the 4 profile fields
+                $updateUser = $pdo->prepare(
+                    'UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE user_id = ?'
+                );
+                $updateUser->execute([$firstName, $lastName, $email, $phone, $userId]);
+            }
+
+            $ok(['status' => 'success']);
+        } break;
         case 'get_logs': {
-            $logsStmt = $pdo->prepare('SELECT status, ip_address, device_info, notes, logged_in_at, logged_out_at FROM user_access_logs WHERE user_id = ? ORDER BY log_id DESC LIMIT 200');
+            $logsStmt = $pdo->prepare('SELECT l.status, l.ip_address, l.device_info, l.notes, l.logged_in_at, l.logged_out_at, u.email FROM user_access_logs l LEFT JOIN users u ON u.user_id = l.user_id WHERE l.user_id = ? ORDER BY l.log_id DESC LIMIT 200');
             $logsStmt->execute([$userId]);
             $logs = $logsStmt->fetchAll();
             $ok(['logs' => array_map(function($l) {
                 return [
                     'status' => $l['status'],
+                    'email' => $l['email'] ?? null,
                     'ip' => $l['ip_address'],
                     'device' => $l['device_info'],
                     'notes' => $l['notes'],
