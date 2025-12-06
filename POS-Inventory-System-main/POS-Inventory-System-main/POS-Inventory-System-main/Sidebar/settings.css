@@ -233,11 +233,32 @@
 
 .table-container {
     overflow-x: auto;
-    max-height: 520px;
     overflow-y: auto;
+    max-height: 600px;
     position: relative;
     border: 1px solid #ececec;
     border-radius: 10px;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #FBB406;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #e0a304;
 }
 
 .logs-description {
@@ -252,10 +273,11 @@
 
 .logs-table {
     width: 100%;
+    min-width: 1000px;
     border-collapse: separate;
     border-spacing: 0;
     font-size: 14px;
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 .logs-table th,
@@ -397,12 +419,46 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+    white-space: nowrap;
+    min-width: 100px;
 }
 
-.restore-btn:hover {
+.restore-btn:hover:not(:disabled) {
     background-color: #176428;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(29, 124, 50, 0.3);
+}
+
+.restore-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #8b9a8f;
+}
+
+.delete-log-btn {
+    border: none;
+    background-color: #dc3545;
+    color: #fff;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.delete-log-btn:hover:not(:disabled) {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+}
+
+.delete-log-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .muted {
@@ -955,6 +1011,28 @@
     .date-picker-section {
         margin: 20px 0;
         padding: 16px;
+    }
+    
+    .table-container {
+        margin-left: -18px;
+        margin-right: -18px;
+        padding: 0 18px;
+    }
+    
+    .logs-table {
+        font-size: 12px;
+        min-width: 800px;
+    }
+    
+    .logs-table th,
+    .logs-table td {
+        padding: 10px 8px;
+    }
+    
+    .restore-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 80px;
     }
 }
 

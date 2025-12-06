@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupClickableCards();
     setupSidebarToggle();
     updateInventoryKPIs();
+    initializeReports();
+    setupReportButtons();
 });
 
 // Setup responsive sidebar toggle
@@ -478,6 +480,126 @@ function setProfitKpis(server) {
         if (todayEl) todayEl.textContent = fmtCurrency(0);
         if (monthEl) monthEl.textContent = fmtCurrency(0);
         if (aovEl) aovEl.textContent = fmtCurrency(0);
+    }
+}
+
+// Initialize Reports
+async function initializeReports() {
+    await loadSalesReport('month');
+    await loadInventoryReport();
+}
+
+// Setup Report Buttons
+function setupReportButtons() {
+    const buttons = ['todayReportBtn', 'weekReportBtn', 'monthReportBtn', 'yearReportBtn'];
+    buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                buttons.forEach(id => {
+                    const b = document.getElementById(id);
+                    if (b) b.classList.remove('active');
+                });
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const period = btnId.replace('ReportBtn', '');
+                loadSalesReport(period);
+            });
+        }
+    });
+    
+    // Set month as default active
+    const monthBtn = document.getElementById('monthReportBtn');
+    if (monthBtn) monthBtn.classList.add('active');
+}
+
+// Load Sales Report
+async function loadSalesReport(period = 'month') {
+    try {
+        const res = await fetch(`api/pos.php?action=analytics&period=${period}`);
+        const json = await res.ok ? await res.json() : {};
+        
+        const fmtCurrency = (val) => {
+            try { return FormatUtils.currency(Number(val || 0)); } catch (_) { 
+                const n = Number(val || 0); 
+                return `₱${n.toFixed(2)}`; 
+            }
+        };
+        
+        // Calculate period-specific data
+        const now = new Date();
+        let startDate, endDate;
+        
+        switch(period) {
+            case 'today':
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                break;
+            case 'week':
+                const dayOfWeek = now.getDay();
+                startDate = new Date(now);
+                startDate.setDate(now.getDate() - dayOfWeek);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                break;
+        }
+        
+        // Fetch detailed sales data
+        const salesRes = await fetch(`api/pos.php?action=sales_report&start=${startDate.toISOString()}&end=${endDate.toISOString()}`);
+        const salesData = salesRes.ok ? await salesRes.json() : { total: 0, orders: 0, avgOrder: 0, bestSeller: null };
+        
+        const totalSalesEl = document.getElementById('totalSales');
+        const totalOrdersEl = document.getElementById('totalOrders');
+        const avgOrderValueEl = document.getElementById('avgOrderValueReport');
+        const bestSellingItemEl = document.getElementById('bestSellingItem');
+        
+        if (totalSalesEl) totalSalesEl.textContent = fmtCurrency(salesData.total || json.monthProfit || 0);
+        if (totalOrdersEl) totalOrdersEl.textContent = (salesData.orders || 0).toString();
+        if (avgOrderValueEl) avgOrderValueEl.textContent = fmtCurrency(salesData.avgOrder || json.avgOrderValue || 0);
+        if (bestSellingItemEl) bestSellingItemEl.textContent = salesData.bestSeller || '—';
+        
+    } catch (error) {
+        console.error('Failed to load sales report:', error);
+    }
+}
+
+// Load Inventory Report
+async function loadInventoryReport() {
+    try {
+        const res = await fetch('api/inventory.php?action=summary');
+        const json = await res.ok ? await res.json() : {};
+        const summary = json.summary || {};
+        
+        const fmtCurrency = (val) => {
+            try { return FormatUtils.currency(Number(val || 0)); } catch (_) { 
+                const n = Number(val || 0); 
+                return `₱${n.toFixed(2)}`; 
+            }
+        };
+        
+        const lowStockEl = document.getElementById('lowStockReport');
+        const outOfStockEl = document.getElementById('outOfStockReport');
+        const totalInventoryValueEl = document.getElementById('totalInventoryValue');
+        const needsReorderEl = document.getElementById('needsReorder');
+        
+        if (lowStockEl) lowStockEl.textContent = (summary.lowStock || 0).toString();
+        if (outOfStockEl) outOfStockEl.textContent = (summary.outOfStock || 0).toString();
+        if (totalInventoryValueEl) totalInventoryValueEl.textContent = fmtCurrency(summary.totalValue || 0);
+        if (needsReorderEl) needsReorderEl.textContent = ((summary.lowStock || 0) + (summary.outOfStock || 0)).toString();
+        
+    } catch (error) {
+        console.error('Failed to load inventory report:', error);
     }
 }
 

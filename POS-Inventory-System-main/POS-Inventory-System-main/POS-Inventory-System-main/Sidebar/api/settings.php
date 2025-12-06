@@ -29,7 +29,7 @@ $err = function($code, $http = 400, $extra = []) { http_response_code($http); ec
             $profileStmt->execute([$userId]);
             $profile = $profileStmt->fetch() ?: [];
 
-            $logsStmt = $pdo->prepare('SELECT l.status, l.ip_address, l.device_info, l.notes, l.logged_in_at, l.logged_out_at, u.email FROM user_access_logs l LEFT JOIN users u ON u.user_id = l.user_id WHERE l.user_id = ? ORDER BY l.log_id DESC LIMIT 200');
+            $logsStmt = $pdo->prepare('SELECT l.log_id, l.status, l.ip_address, l.device_info, l.notes, l.logged_in_at, l.logged_out_at, u.email FROM user_access_logs l LEFT JOIN users u ON u.user_id = l.user_id WHERE l.user_id = ? ORDER BY l.log_id DESC LIMIT 200');
             $logsStmt->execute([$userId]);
             $logs = $logsStmt->fetchAll();
             $ok([
@@ -63,6 +63,7 @@ $err = function($code, $http = 400, $extra = []) { http_response_code($http); ec
                 ],
                 'logs' => array_map(function($l) {
                     return [
+                        'log_id' => (int)$l['log_id'],
                         'status' => $l['status'],
                         'email' => $l['email'] ?? null,
                         'ip' => $l['ip_address'],
@@ -195,11 +196,12 @@ $err = function($code, $http = 400, $extra = []) { http_response_code($http); ec
             $ok(['status' => 'success']);
         } break;
         case 'get_logs': {
-            $logsStmt = $pdo->prepare('SELECT l.status, l.ip_address, l.device_info, l.notes, l.logged_in_at, l.logged_out_at, u.email FROM user_access_logs l LEFT JOIN users u ON u.user_id = l.user_id WHERE l.user_id = ? ORDER BY l.log_id DESC LIMIT 200');
+            $logsStmt = $pdo->prepare('SELECT l.log_id, l.status, l.ip_address, l.device_info, l.notes, l.logged_in_at, l.logged_out_at, u.email FROM user_access_logs l LEFT JOIN users u ON u.user_id = l.user_id WHERE l.user_id = ? ORDER BY l.log_id DESC LIMIT 200');
             $logsStmt->execute([$userId]);
             $logs = $logsStmt->fetchAll();
             $ok(['logs' => array_map(function($l) {
                 return [
+                    'log_id' => (int)$l['log_id'],
                     'status' => $l['status'],
                     'email' => $l['email'] ?? null,
                     'ip' => $l['ip_address'],
@@ -218,6 +220,22 @@ $err = function($code, $http = 400, $extra = []) { http_response_code($http); ec
             $now = date('Y-m-d H:i:s');
             $stmt = $pdo->prepare('INSERT INTO user_access_logs (user_id, status, ip_address, device_info, notes, logged_in_at) VALUES (?, ?, ?, ?, ?, ?)');
             $stmt->execute([$userId, $status, $ip, $device, $notes, $now]);
+            $ok(['status' => 'success']);
+        } break;
+        case 'delete_access_log': {
+            $logId = isset($input['log_id']) ? (int)$input['log_id'] : 0;
+            if (!$logId) $err('missing_identifier', 422);
+            
+            // Verify the log belongs to the current user
+            $checkStmt = $pdo->prepare('SELECT log_id FROM user_access_logs WHERE log_id = ? AND user_id = ? LIMIT 1');
+            $checkStmt->execute([$logId, $userId]);
+            if (!$checkStmt->fetch()) {
+                $err('log_not_found', 404);
+            }
+            
+            // Delete the log
+            $deleteStmt = $pdo->prepare('DELETE FROM user_access_logs WHERE log_id = ? AND user_id = ?');
+            $deleteStmt->execute([$logId, $userId]);
             $ok(['status' => 'success']);
         } break;
         default:

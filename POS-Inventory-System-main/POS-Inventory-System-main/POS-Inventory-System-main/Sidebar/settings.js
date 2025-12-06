@@ -894,7 +894,7 @@ function renderAccessLogs() {
     if (!accessLogs.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align:center; padding:20px;">No access logs recorded yet.</td>
+                <td colspan="7" style="text-align:center; padding:20px;">No access logs recorded yet.</td>
             </tr>
         `;
         updateSecurityOverview();
@@ -914,7 +914,7 @@ function renderAccessLogs() {
                 'Logged Out';
 
             return `
-                <tr>
+                <tr data-log-id="${log.log_id || log.id}">
                     <td>
                         ${isActive
                             ? `<button class="logout-device-btn" data-session-id="${log.id}">Log Out</button>`
@@ -930,13 +930,72 @@ function renderAccessLogs() {
                             ${statusLabel}
                         </span>
                     </td>
+                    <td>
+                        <button class="delete-log-btn" data-log-id="${log.log_id || log.id}" title="Delete log entry">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
         }).join('');
 
     tbody.innerHTML = rows;
     attachLogoutActions();
+    attachDeleteLogActions();
     updateSecurityOverview();
+}
+
+function attachDeleteLogActions() {
+    const deleteButtons = document.querySelectorAll('.delete-log-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const logId = this.getAttribute('data-log-id');
+            if (!logId) return;
+            
+            const row = this.closest('tr');
+            const email = row.querySelector('td:nth-child(2)')?.textContent || 'this log';
+            const timestamp = row.querySelector('td:nth-child(3)')?.textContent || '';
+            
+            if (!confirm(`Are you sure you want to delete the log entry for ${email} (${timestamp})?`)) {
+                return;
+            }
+            
+            // Disable button during deletion
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                const res = await fetch(apiPath('settings.php'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_access_log', log_id: parseInt(logId, 10) })
+                });
+                
+                let json = {};
+                try { json = await res.json(); } catch (_) { json = {}; }
+                
+                if (!res.ok || (json && json.error)) {
+                    const code = (json && json.error) ? json.error : 'server_error';
+                    showToast({ message: settingsErrorMessage(code) || 'Failed to delete log', kind: 'error' });
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-trash"></i>';
+                    return;
+                }
+                
+                // Remove from local storage and UI
+                accessLogs = accessLogs.filter(log => (log.log_id || log.id) !== logId);
+                saveAccessLogs();
+                row.remove();
+                updateSecurityOverview();
+                showToast({ message: 'Log entry deleted', kind: 'success' });
+            } catch (error) {
+                console.error('Delete log error:', error);
+                showToast({ message: 'Network error. Please try again.', kind: 'error' });
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-trash"></i>';
+            }
+        });
+    });
 }
 
 function setupLogButtons() {
@@ -1093,7 +1152,8 @@ async function loadSettingsFromBackend() {
         }
         if (Array.isArray(json.logs)) {
             accessLogs = json.logs.map((l, idx) => ({
-                id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `log-${idx}-${Date.now()}`,
+                log_id: l.log_id || (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `log-${idx}-${Date.now()}`,
+                id: l.log_id || (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `log-${idx}-${Date.now()}`,
                 email: l.email || '—',
                 timestamp: l.timestamp,
                 ip: l.ip,
@@ -1312,27 +1372,85 @@ function initializeArchivesSection() {
     tbody.addEventListener('click', async (e) => {
         const btn = e.target.closest('.restore-btn');
         if (!btn) return;
+        
+        // Prevent double-clicks
+        if (btn.disabled) return;
+        
         const type = btn.getAttribute('data-type');
         const aid = parseInt(btn.getAttribute('data-archive-id'), 10);
-        if (!aid) return;
+        if (!aid || !type) {
+            showToast({ message: 'Invalid archive item', kind: 'error' });
+            return;
+        }
+        
+        // Disable button and show loading state
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restoring...';
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+        
         try {
-            const payload = { action: '', archive_id: aid };
-            if (type === 'products') payload.action = 'restore_product';
-            else if (type === 'ingredients') payload.action = 'restore_ingredient';
-            else if (type === 'recipes') payload.action = 'restore_recipe';
-            else return;
-            const res = await fetch(apiPath('inventory.php'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            let json = {};
-            try { json = await res.json(); } catch (_) { json = {}; }
-            if (!res.ok || (json && json.error)) {
-                const code = (json && json.error) ? json.error : 'server_error';
-                showToast({ message: settingsErrorMessage(code), kind: 'error' });
+            const payload = { 
+                action: '', 
+                archive_id: aid 
+            };
+            
+            if (type === 'products') {
+                payload.action = 'restore_product';
+            } else if (type === 'ingredients') {
+                payload.action = 'restore_ingredient';
+            } else if (type === 'recipes') {
+                payload.action = 'restore_recipe';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                showToast({ message: 'Unknown archive type', kind: 'error' });
                 return;
             }
-            showToast({ message: 'Item restored', kind: 'success' });
-            load();
-        } catch (_) {
-            showToast({ message: 'Network error', kind: 'error' });
+            
+            const endpoint = apiPath('inventory.php');
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            let json = {};
+            try {
+                json = await res.json();
+            } catch (parseError) {
+                json = {};
+            }
+            
+            if (!res.ok || (json && json.error)) {
+                const code = (json && json.error) ? json.error : 'server_error';
+                const errorMsg = settingsErrorMessage(code) || 'Failed to restore item';
+                showToast({ message: errorMsg, kind: 'error' });
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                return;
+            }
+            
+            // Success - show message and reload
+            showToast({ message: `${type.charAt(0).toUpperCase() + type.slice(1)} restored successfully!`, kind: 'success' });
+            
+            // Reload archives list after a short delay
+            setTimeout(() => {
+                load();
+            }, 500);
+            
+        } catch (networkError) {
+            console.error('Restore error:', networkError);
+            showToast({ message: 'Network error. Please check your connection and try again.', kind: 'error' });
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
         }
     });
     load();

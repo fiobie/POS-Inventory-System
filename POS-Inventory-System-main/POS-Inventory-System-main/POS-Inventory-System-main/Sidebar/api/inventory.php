@@ -390,7 +390,7 @@ $products_rows = $products_stmt ? $products_stmt->fetchAll() : [];
 $products_data = array_map(function($row) {
     return [
         'id' => ($row['client_product_id'] ?: ('#' . str_pad((int)$row['product_id'], 4, '0', STR_PAD_LEFT))),
-        'product_id' => (int)$row['product_id'],
+        'product_id' => (int)$row['product_id'],    
         'name' => $row['name'],
         'category' => ($row['category_slug'] ?: 'uncategorized'),
         'category_name' => ($row['category_name'] ?: 'Uncategorized'),

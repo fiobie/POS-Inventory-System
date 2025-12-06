@@ -68,18 +68,22 @@ class InventoryManager {
     /**
      * Initialize the inventory manager
      */
-    init() {
+    async init() {
         this.loadElements();
         this.loadInventoryData();
         this.normalizeCategoryIds('bubbletea');
-        this.syncIngredientsFromBackend();
-        this.syncRecipesFromBackend();
         this.setupEventListeners();
         this.populateCategoryList();
         this.populateSortMenu();
+        
+        // Load all data from database first
+        await this.syncProductsFromBackend();
+        await this.syncIngredientsFromBackend();
+        await this.syncRecipesFromBackend();
+        
+        // Then render table with all database data
         this.renderTable();
         this.updateSummaryCards();
-        this.syncProductsFromBackend();
     }
 
     /**
@@ -587,6 +591,8 @@ class InventoryManager {
                 status: this.calculateStatus(Number(r.stock) || 0)
             }));
             this.inventoryData = mapped;
+            // Ensure all products from database are included, especially bubble tea flavors
+            console.log(`Loaded ${mapped.length} products from database, including ${mapped.filter(p => p.category === 'bubbletea').length} bubble tea flavors`);
             // Cleanup mistakenly seeded duplicates without "Milk Tea" suffix
             const dupCandidates = ['Cookies & Cream','Brown Sugar'];
             const existingNames = new Set(mapped.map(p => String(p.name).toLowerCase().trim()));
@@ -617,10 +623,16 @@ class InventoryManager {
                     this.syncPackagingIngredient(p.name, p.stock);
                 }
             });
+            // Sync recipes and ingredients to ensure Ingredients Short data is available
+            await this.syncRecipesFromBackend();
+            await this.syncIngredientsFromBackend();
             this.saveInventoryData();
             this.renderTable();
             this.updateSummaryCards();
-        } catch (e) { /* silent fallback to local inventory */ }
+        } catch (e) { 
+            console.error('Error syncing products from backend:', e);
+            /* silent fallback to local inventory */ 
+        }
     }
 
     async syncIngredientsFromBackend() {
@@ -937,7 +949,7 @@ class InventoryManager {
             const shortDetails = recipe.length ? this.computeShortageDetails(recipe, product.name) : [];
             const shortHtml = shortDetails.length
                 ? `<div class="short-list">${shortDetails.map(s => `<span class="chip ${s.kind === 'out' ? 'chip-out' : 'chip-low'}">${s.name} <span class="chip-meta">(short by ${FormatUtils.number(s.needed)}${s.unit}; requires ${FormatUtils.number(s.required)}${s.unit}/serving)</span></span>`).join('')}</div>`
-                : '-';
+                : (isRecipeCategory ? '<span class="muted">No shortages</span>' : '-');
             
             const row = DOMHelper.create('tr');
             const ingStocks = recipe.length ? recipe.map(r => {
@@ -945,14 +957,10 @@ class InventoryManager {
                 const stk = ing ? Number(ing.stock) || 0 : 0;
                 return `${r.name} (${FormatUtils.number(stk)}${r.unit})`;
             }).join(', ') : '-';
-            const priceDisplay = product.category === 'bubbletea' ? 'Size-based' : FormatUtils.currency(product.price);
-            const valueDisplay = product.category === 'bubbletea' ? '-' : FormatUtils.currency(value);
             row.innerHTML = `
                 <td>${product.id}</td>
                 <td>${product.name}</td>
                 <td>${this.getCategoryText(product.category)}</td>
-                <td>${priceDisplay}</td>
-                <td>${isRecipeCategory ? ingStocks : product.stock}</td>
                 <td>
                     <div class="status-stack">
                         ${isRecipeCategory ? '' : `<span class="status-badge ${status}">${this.getStatusText(status)}</span>`}
@@ -960,9 +968,7 @@ class InventoryManager {
                     </div>
                     ${yieldText ? `<div class="yield-meta">${yieldText}</div>` : ''}
                 </td>
-                <td>${valueDisplay}</td>
-                <td>${ingredientsText}</td>
-                <td>${FormatUtils.currency(recipeCost)}</td>
+                <td>${isRecipeCategory ? ingStocks : product.stock}</td>
                 <td>${possibleServings}</td>
                 <td>${shortHtml}</td>
                 <td>
@@ -2184,13 +2190,13 @@ function showToast(opts) {
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         if (typeof PersistUtils !== 'undefined') PersistUtils.applyTabPersistence('inventory');
         window.inventoryManager = new InventoryManager();
-        window.inventoryManager.init();
+        await window.inventoryManager.init();
     });
 } else {
     if (typeof PersistUtils !== 'undefined') PersistUtils.applyTabPersistence('inventory');
     window.inventoryManager = new InventoryManager();
-    window.inventoryManager.init();
+    (async () => { await window.inventoryManager.init(); })();
 }

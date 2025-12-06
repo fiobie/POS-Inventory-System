@@ -287,6 +287,42 @@ if ((isset($_GET['format']) && $_GET['format'] === 'json') || isset($_GET['actio
             echo json_encode(['error' => 'db_error']);
             exit;
         }
+    } elseif ($action === 'sales_report') {
+        try {
+            $start = isset($_GET['start']) ? $_GET['start'] : date('Y-m-d 00:00:00');
+            $end = isset($_GET['end']) ? $_GET['end'] : date('Y-m-d 23:59:59');
+            
+            // Total sales
+            $totalStmt = $pdo->prepare('SELECT COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE placed_at >= ? AND placed_at <= ? AND order_status = "paid"');
+            $totalStmt->execute([$start, $end]);
+            $total = (float)($totalStmt->fetch()['total'] ?? 0);
+            
+            // Total orders
+            $ordersStmt = $pdo->prepare('SELECT COUNT(*) AS count FROM orders WHERE placed_at >= ? AND placed_at <= ? AND order_status = "paid"');
+            $ordersStmt->execute([$start, $end]);
+            $orders = (int)($ordersStmt->fetch()['count'] ?? 0);
+            
+            // Average order value
+            $avgOrder = $orders > 0 ? ($total / $orders) : 0;
+            
+            // Best selling item
+            $bestStmt = $pdo->prepare('SELECT oi.item_name, SUM(oi.quantity) AS qty FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.placed_at >= ? AND o.placed_at <= ? AND o.order_status = "paid" GROUP BY oi.item_name ORDER BY qty DESC LIMIT 1');
+            $bestStmt->execute([$start, $end]);
+            $bestRow = $bestStmt->fetch();
+            $bestSeller = $bestRow ? $bestRow['item_name'] : null;
+            
+            echo json_encode([
+                'total' => $total,
+                'orders' => $orders,
+                'avgOrder' => $avgOrder,
+                'bestSeller' => $bestSeller
+            ]);
+            exit;
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'db_error']);
+            exit;
+        }
     }
 }
 ?>
