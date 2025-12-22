@@ -1327,7 +1327,17 @@ function initializeArchivesSection() {
                 <td>${typeof r.selling_price === 'number' ? r.selling_price.toFixed(2) : '—'}</td>
                 <td>${typeof r.stock_quantity === 'number' ? r.stock_quantity : '—'}</td>
                 <td>${formatTimestamp(r.deleted_at)}</td>
-                <td><button class="restore-btn" data-type="products" data-archive-id="${r.archive_id}"><i class="fas fa-rotate-left"></i> Restore</button></td>
+                <td>
+                    <button
+                        class="restore-btn"
+                        data-type="products"
+                        data-archive-id="${r.archive_id}"
+                        data-product-id="${r.product_id || ''}"
+                        data-product-code="${r.client_product_id || ''}"
+                    >
+                        <i class="fas fa-rotate-left"></i> Restore
+                    </button>
+                </td>
             </tr>`;
         }).join('');
     };
@@ -1436,10 +1446,29 @@ function initializeArchivesSection() {
                 return;
             }
             
-            // Success - show message and reload
+            // Success - show message
             showToast({ message: `${type.charAt(0).toUpperCase() + type.slice(1)} restored successfully!`, kind: 'success' });
             
-            // Reload archives list after a short delay
+            // If restoring a product, navigate to Inventory (Products Details) so the user
+            // immediately sees the restored item and its stock from the database.
+            if (type === 'products') {
+                const productCode = btn.getAttribute('data-product-code') || '';
+                
+                setTimeout(() => {
+                    const baseUrl = window.location.pathname.includes('/api/')
+                        ? 'inventory.php'
+                        : 'inventory.html';
+                    
+                    const url = productCode
+                        ? `${baseUrl}?restored=${encodeURIComponent(productCode)}`
+                        : baseUrl;
+                    
+                    window.location.href = url;
+                }, 600);
+                return;
+            }
+            
+            // For non-product types, just reload archives list after a short delay
             setTimeout(() => {
                 load();
             }, 500);
