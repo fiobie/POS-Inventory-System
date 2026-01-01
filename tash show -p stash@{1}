@@ -1,0 +1,141 @@
+[1mdiff --git a/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/README.md b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/README.md[m
+[1mnew file mode 100644[m
+[1mindex 0000000..9131e6e[m
+[1m--- /dev/null[m
+[1m+++ b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/README.md[m
+[36m@@ -0,0 +1,11 @@[m
+[32m+[m
+[32m+[m[32m  # POS & Inventory Management System Wireframe (1) (Community)[m
+[32m+[m
+[32m+[m[32m  This is a code bundle for POS & Inventory Management System Wireframe (1) (Community). The original project is available at https://www.figma.com/design/xfJDeqm7VEg8pjDMKjAVHv/POS---Inventory-Management-System-Wireframe--1---Community-.[m
+[32m+[m
+[32m+[m[32m  ## Running the code[m
+[32m+[m
+[32m+[m[32m  Run `npm i` to install the dependencies.[m
+[32m+[m
+[32m+[m[32m  Run `npm run dev` to start the development server.[m
+[32m+[m[41m  [m
+\ No newline at end of file[m
+[1mdiff --git a/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/REFACTORING_GUIDE.md b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/REFACTORING_GUIDE.md[m
+[1mnew file mode 100644[m
+[1mindex 0000000..7a06040[m
+[1m--- /dev/null[m
+[1m+++ b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/REFACTORING_GUIDE.md[m
+[36m@@ -0,0 +1,111 @@[m
+[32m+[m[32m# POS-Inventory System - OOP Refactoring Guide[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Overview[m[41m[m
+[32m+[m[32mThe system has been refactored to use Object-Oriented Programming (OOP) principles for better scalability, maintainability, and performance optimization for lower-end devices.[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Architecture[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### Core Utilities (`core/utils.js`)[m[41m[m
+[32m+[m[32mReusable utility classes used across all modules:[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m1. **StorageManager** - Efficient localStorage operations with caching[m[41m[m
+[32m+[m[32m2. **EventManager** - Event handling with debouncing and cleanup[m[41m[m
+[32m+[m[32m3. **DOMHelper** - Optimized DOM manipulation with element caching[m[41m[m
+[32m+[m[32m4. **PerformanceUtils** - Performance optimization utilities (throttling, lazy loading, virtual scrolling)[m[41m[m
+[32m+[m[32m5. **FormatUtils** - Formatting utilities (currency, numbers, text)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### Shared Managers[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m1. **SidebarManager** (`core/sidebar-manager.js`)[m[41m[m
+[32m+[m[32m   - Handles sidebar toggle functionality[m[41m[m
+[32m+[m[32m   - Reusable across all pages[m[41m[m
+[32m+[m[32m   - Auto-initializes on DOM ready[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m2. **UserProfileManager** (`user-profile.js`)[m[41m[m
+[32m+[m[32m   - Manages user profile display and updates[m[41m[m
+[32m+[m[32m   - Listens for profile update events[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### Module Managers[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m1. **InventoryManager** (`inventory.js`)[m[41m[m
+[32m+[m[32m   - Complete inventory management system[m[41m[m
+[32m+[m[32m   - Product CRUD operations[m[41m[m
+[32m+[m[32m   - Filtering and searching[m[41m[m
+[32m+[m[32m   - Summary statistics[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Performance Optimizations[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### 1. Element Caching[m[41m[m
+[32m+[m[32m- DOM elements are cached to avoid repeated queries[m[41m[m
+[32m+[m[32m- Cache is cleared when DOM changes significantly[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### 2. Debouncing[m[41m[m
+[32m+[m[32m- Search input: 300ms debounce[m[41m[m
+[32m+[m[32m- Event handlers: 100ms debounce where appropriate[m[41m[m
+[32m+[m[32m- Reduces unnecessary function calls[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### 3. Efficient DOM Updates[m[41m[m
+[32m+[m[32m- Uses DocumentFragment for batch DOM updates[m[41m[m
+[32m+[m[32m- Minimizes reflows and repaints[m[41m[m
+[32m+[m[32m- Virtual scrolling ready for large lists[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### 4. Lazy Loading[m[41m[m
+[32m+[m[32m- Images can be lazy-loaded using IntersectionObserver[m[41m[m
+[32m+[m[32m- Falls back gracefully for older browsers[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m### 5. Storage Caching[m[41m[m
+[32m+[m[32m- localStorage operations cached for 1 second[m[41m[m
+[32m+[m[32m- Reduces storage read/write operations[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Usage Pattern[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mAll managers follow a consistent pattern:[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m```javascript[m[41m[m
+[32m+[m[32m// Auto-initialization[m[41m[m
+[32m+[m[32mif (document.readyState === 'loading') {[m[41m[m
+[32m+[m[32m    document.addEventListener('DOMContentLoaded', () => {[m[41m[m
+[32m+[m[32m        window.managerName = new ManagerClass();[m[41m[m
+[32m+[m[32m        window.managerName.init();[m[41m[m
+[32m+[m[32m    });[m[41m[m
+[32m+[m[32m} else {[m[41m[m
+[32m+[m[32m    window.managerName = new ManagerClass();[m[41m[m
+[32m+[m[32m    window.managerName.init();[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[32m```[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Adding New Features[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m1. **Create a new Manager class** extending core utilities[m[41m[m
+[32m+[m[32m2. **Use StorageManager** for data persistence[m[41m[m
+[32m+[m[32m3. **Use EventManager** for event handling[m[41m[m
+[32m+[m[32m4. **Use DOMHelper** for DOM operations[m[41m[m
+[32m+[m[32m5. **Follow the initialization pattern** above[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Remaining Refactoring Tasks[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mThe following modules still need OOP refactoring:[m[41m[m
+[32m+[m[32m- `pos.js` → `POSManager` class[m[41m[m
+[32m+[m[32m- `dashboard.js` → `DashboardManager` class[m[41m  [m
+[32m+[m[32m- `settings.js` → `SettingsManager` class[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Benefits[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m1. **Scalability**: Easy to add new features and modules[m[41m[m
+[32m+[m[32m2. **Maintainability**: Clean, organized code structure[m[41m[m
+[32m+[m[32m3. **Performance**: Optimized for lower-end devices[m[41m[m
+[32m+[m[32m4. **Reusability**: Core utilities shared across modules[m[41m[m
+[32m+[m[32m5. **Testability**: Classes can be easily unit tested[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Browser Compatibility[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m- Modern browsers (Chrome, Firefox, Safari, Edge)[m[41m[m
+[32m+[m[32m- Graceful fallbacks for older browsers[m[41m[m
+[32m+[m[32m- No external dependencies required[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Notes[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m- All existing UI/UX and functionality preserved[m[41m[m
+[32m+[m[32m- No breaking changes to user experience[m[41m[m
+[32m+[m[32m- Code is production-ready and optimized[m[41m[m
+[32m+[m[41m[m
+[1mdiff --git a/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/Sidebar/BONBON BUBBLE TEA COSTING (1).xlsx b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/Sidebar/BONBON BUBBLE TEA COSTING (1).xlsx[m
+[1mnew file mode 100644[m
+[1mindex 0000000..a1cd771[m
+Binary files /dev/null and b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/Sidebar/BONBON BUBBLE TEA COSTING (1).xlsx differ
+[1mdiff --git a/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/Sidebar/BONBON BUBBLE TEA COSTING - Sheet1.pdf b/POS-Inventory-System-main/POS-Inventory-System-main/POS-Inventory-System-main/Sidebar/BONBON BUBBLE TEA COSTING - Sheet1.pdf[m
+[1mnew fi
