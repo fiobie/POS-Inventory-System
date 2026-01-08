@@ -1,7 +1,6 @@
-<?php include 'db_connection.php'; ?>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,41 +9,39 @@
     <link rel="stylesheet" href="pos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
+
 <body>
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="container">
         <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <button class="sidebar-close" id="sidebarClose">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="sidebar-user-info">
-                <img src="Bonbon Pics/Logo.png" alt="User avatar" class="sidebar-user-avatar" data-user-avatar data-default-avatar="Bonbon Pics/Logo.png">
-                <div class="sidebar-user-text">
-                    <span class="sidebar-user-name" data-user-name>Bonbon User</span>
-                    <small class="sidebar-user-email" data-user-email>user@example.com</small>
-                </div>
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="Bonbon Pics/Logo.png" alt="Bonbon Kitchen Logo" class="logo-image">
+                <h1>Bonbon Kitchen</h1>
             </div>
-            
+
             <nav class="nav-menu">
-                <a href="dashboard.php" class="nav-item" data-page="dashboard">
+                <a href="dashboard.html" class="nav-item" data-page="dashboard">
                     <span class="nav-icon"><i class="fas fa-th-large"></i></span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="pos.php" class="nav-item active" data-page="pos">
+                <a href="pos.html" class="nav-item active" data-page="pos">
                     <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span>
                     <span class="nav-text">POS</span>
                 </a>
-                <a href="inventory.php" class="nav-item" data-page="inventory">
+                <a href="inventory.html" class="nav-item" data-page="inventory">
                     <span class="nav-icon"><i class="fas fa-box"></i></span>
                     <span class="nav-text">Inventory</span>
                 </a>
-                <a href="settings.php" class="nav-item" data-page="settings">
+                <a href="logs.html" class="nav-item" data-page="logs">
+                    <span class="nav-icon"><i class="fas fa-file-alt"></i></span>
+                    <span class="nav-text">Logs</span>
+                </a>
+                <a href="settings.html" class="nav-item" data-page="settings">
                     <span class="nav-icon"><i class="fas fa-cog"></i></span>
                     <span class="nav-text">Settings</span>
                 </a>
             </nav>
-            
+
             <div class="logout">
                 <a href="#" class="nav-item">
                     <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
@@ -56,15 +53,10 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="header">
-                <button class="sidebar-toggle" id="sidebarToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
                 <h2 class="page-title">POS</h2>
                 <div class="user-profile">
-                    <div class="user-icon">
-                        <img src="Bonbon Pics/Logo.png" alt="User avatar" data-user-avatar data-default-avatar="Bonbon Pics/Logo.png">
-                    </div>
-                    <span class="user-name" data-user-name>User Name</span>
+                    <div class="user-icon"><i class="fas fa-user"></i></div>
+                    <span class="user-name">User Name</span>
                 </div>
             </header>
 
@@ -77,6 +69,10 @@
                             <button class="add-product-btn" id="openAddProductBtn">
                                 <i class="fas fa-plus"></i>
                                 Add Product
+                            </button>
+                            <button class="edit-product-btn" id="openEditProductBtn" title="Edit existing product">
+                                <i class="fas fa-edit"></i>
+                                Edit Product
                             </button>
                             <div class="categories-dropdown">
                                 <button class="categories-btn" id="categoriesBtn">
@@ -227,6 +223,24 @@
                     </label>
                 </div>
 
+                <!-- Edit mode selector (visible when editing an existing product) -->
+                <div class="form-grid" id="editProductSelectorRow" style="display:none; margin-top:8px;">
+                    <label class="form-control">
+                        <span>Select Product to Edit</span>
+                        <select id="editProductSelector">
+                            <!-- options populated dynamically -->
+                        </select>
+                    </label>
+                </div>
+
+                <label class="form-control" style="margin-top:8px;">
+                    <span>Description</span>
+                    <textarea id="productDescriptionInput" placeholder="Optional product description"
+                        rows="3"></textarea>
+                </label>
+
+                <input type="hidden" id="editingProductId" value="">
+
                 <div class="image-upload-group">
                     <div class="group-header">
                         <span>Product Image</span>
@@ -254,7 +268,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="user-profile.js"></script>
-    <script src="pos.js"></script>
+    <script src="pos.js?v=1"></script>
 </body>
+
 </html>

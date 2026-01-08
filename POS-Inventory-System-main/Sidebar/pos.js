@@ -1,32 +1,7 @@
-// POS System JavaScript
-
-// Sample products data
-// Optional: add image: 'relative/path/to-image.png' to display product photos
-const products = {
-    chicken: [
-        { id: 1, name: 'Cloy Honey Soy', price: 149, category: 'chicken', image: 'Bonbon Pics/cloy honey soy.jpg'},
-        { id: 2, name: 'Boombayah', price: 149, category: 'chicken', image: 'Bonbon Pics/boombayah.jpg'},
-        { id: 3, name: 'Honey Butter Night', price: 149, category: 'chicken', image: 'Bonbon Pics/honey butter night.jpg'},
-        { id: 4, name: 'Oppa BB-Q', price: 149, category: 'chicken', image: 'Bonbon Pics/oppa bb-q.jpg'},
-        { id: 5, name: 'Chijeu Chikin', price: 149, category: 'chicken', image: 'Bonbon Pics/Chijeu Chikin.jpg'},
-        { id: 6, name: 'Olenji Chikin', price: 149, category: 'chicken', image: 'Bonbon Pics/olenji chikin.jpg'},
-        { id: 7, name: 'Salted Egg Chikin', price: 159, category: 'chicken', image: 'Bonbon Pics/salted egg chikin.jpg'},
-        { id: 8, name: 'Yangneom Nom', price: 159, category: 'chicken', image: 'Bonbon Pics/yangneom nom.jpg'},
-        { id: 9, name: 'Bonbon Buldak', price: 159, category: 'chicken', image: 'Bonbon Pics/bonbon buldak.jpg'},
-        { id: 10, name: 'Snow Cheese', price: 159, category: 'chicken', image: 'Bonbon Pics/snow cheese.jpg'},
-        { id: 11, name: 'Honey Mustard Chikin', price: 159, category: 'chicken', image: 'Bonbon Pics/honey mustard chikin.jpg'}
-    ],
-    bubbletea: [
-        createBubbleTeaProduct(12, 'Classic', 45, 'Bonbon Pics/Milktea3.jpg'),
-        createBubbleTeaProduct(13, 'Wintermelon', 50, 'Bonbon Pics/Milktea3.jpg'),
-        createBubbleTeaProduct(14, 'Okinawa', 50, 'Bonbon Pics/Milktea3.jpg'),
-        createBubbleTeaProduct(15, 'Cookies & Cream', 60, 'Bonbon Pics/Milktea1.jpg'),
-        createBubbleTeaProduct(16, 'Matcha', 55, 'Bonbon Pics/Milktea4.jpg'),
-        createBubbleTeaProduct(17, 'Taro', 55, 'Bonbon Pics/Milktea4.jpg'),
-        createBubbleTeaProduct(18, 'Strawberry', 55, 'Bonbon Pics/Milktea1.jpg'),
-        createBubbleTeaProduct(19, 'Chocolate', 55, 'Bonbon Pics/Milktea4.jpg'),
-        createBubbleTeaProduct(20, 'Brown Sugar', 80, 'Bonbon Pics/Milktea2.jpg')
-    ]
+let products = {
+    chicken: [],
+    bubbletea: [],
+    uncategorized: []
 };
 
 function createBubbleTeaProduct(id, name, basePrice, image) {
@@ -44,7 +19,6 @@ function createBubbleTeaProduct(id, name, basePrice, image) {
     };
 }
 
-// Current order state
 let currentOrder = [];
 const STORAGE_KEY = 'bonbonPosOrders';
 let orderList = loadOrdersFromStorage();
@@ -54,15 +28,36 @@ let selectedOrderDate = getTodayISO();
 let nextProductId = getInitialProductId();
 let cropperInstance = null;
 
-// Toggle visibility of order sections (Notes, Payment, Total Price, Confirm Button)
+// Helper function to encode image paths for use in img src
+function encodeImagePath(path) {
+    if (!path) return null;
+    // Just return the path as-is - browsers handle spaces in src attributes
+    return path;
+}
+
+let API_BASE = 'api';
+try {
+    const pathParts = window.location.pathname.split('/');
+    // Find the Sidebar folder in the path and build API path relative to it
+    const sidebarIndex = pathParts.findIndex(p => p.toLowerCase() === 'sidebar');
+    if (sidebarIndex !== -1) {
+        const basePath = pathParts.slice(0, sidebarIndex + 1).join('/');
+        API_BASE = basePath + '/api';
+    } else {
+        // Fallback: assume api is in same directory
+        API_BASE = 'api';
+    }
+} catch (e) {
+    API_BASE = 'api';
+}
+
 function toggleOrderSections(show) {
     const orderNotes = document.querySelector('.order-notes');
     const paymentMethod = document.querySelector('.payment-method');
     const totalPrice = document.querySelector('.total-price');
     const confirmBtnContainer = document.querySelector('.confirm-btn-container');
-    
+
     if (show) {
-        // Add show class with slight delay for smooth animation
         setTimeout(() => {
             orderNotes.classList.add('show');
         }, 100);
@@ -76,7 +71,6 @@ function toggleOrderSections(show) {
             confirmBtnContainer.classList.add('show');
         }, 400);
     } else {
-        // Remove show class
         orderNotes.classList.remove('show');
         paymentMethod.classList.remove('show');
         totalPrice.classList.remove('show');
@@ -147,17 +141,105 @@ function capitalize(value) {
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function () {
+    await loadProductsFromServer();
     initializeProducts();
     setupEventListeners();
     setupAddProductModal();
-    setupSidebarToggle();
     updateTotalPrice();
-    // Hide sections initially
     toggleOrderSections(false);
     initializeDateFilter();
 });
+
+async function loadProductsFromServer() {
+    try {
+        const response = await fetch(API_BASE + '/products.php');
+        const serverProducts = await response.json();
+
+        if (!Array.isArray(serverProducts)) {
+            loadHardcodedProducts();
+            return;
+        }
+
+        products = {
+            chicken: [],
+            bubbletea: [],
+            uncategorized: []
+        };
+
+        serverProducts.forEach(prod => {
+            let categoryName = (prod.category_name || '').toLowerCase().trim();
+            let category = categoryName;
+
+            if (categoryName.includes('chicken')) {
+                category = 'chicken';
+            } else if (categoryName.includes('bubble') || categoryName.includes('tea')) {
+                category = 'bubbletea';
+            } else {
+                // For unknown categories, normalize: remove spaces and special chars
+                category = categoryName.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') || 'uncategorized';
+            }
+
+            if (!products[category]) {
+                products[category] = [];
+            }
+
+            if (category === 'bubbletea' && !prod.sizes) {
+                products[category].push({
+                    id: prod.product_id,
+                    name: prod.name,
+                    price: parseFloat(prod.selling_price),
+                    category: category,
+                    image: prod.image_path || null,
+                    sizes: {
+                        small: parseFloat(prod.selling_price),
+                        medium: parseFloat(prod.selling_price) + 15,
+                        large: parseFloat(prod.selling_price) + 30
+                    }
+                });
+            } else {
+                products[category].push({
+                    id: prod.product_id,
+                    name: prod.name,
+                    price: parseFloat(prod.selling_price),
+                    category: category,
+                    image: prod.image_path || null
+                });
+            }
+        });
+    } catch (error) {
+        console.warn('Could not load products from server:', error);
+        loadHardcodedProducts();
+    }
+}
+
+function loadHardcodedProducts() {
+    products.chicken = [
+        { id: 1001, name: 'Cloy Honey Soy', price: 149, category: 'chicken', image: 'Bonbon Pics/cloy honey soy.jpg' },
+        { id: 1002, name: 'Boombayah', price: 149, category: 'chicken', image: 'Bonbon Pics/boombayah.jpg' },
+        { id: 1003, name: 'Honey Butter Night', price: 149, category: 'chicken', image: 'Bonbon Pics/honey butter night.jpg' },
+        { id: 1004, name: 'Oppa BB-Q', price: 149, category: 'chicken', image: 'Bonbon Pics/Oppa BB-Q.jpg' },
+        { id: 1005, name: 'Chijeu Chikin', price: 149, category: 'chicken', image: 'Bonbon Pics/Chijeu Chikin.jpg' },
+        { id: 1006, name: 'Olenji Chikin', price: 149, category: 'chicken', image: 'Bonbon Pics/olenji chikin.jpg' },
+        { id: 1007, name: 'Salted Egg Chikin', price: 159, category: 'chicken', image: 'Bonbon Pics/Salted Egg Chikin.jpg' },
+        { id: 1008, name: 'Yangneom Nom', price: 159, category: 'chicken', image: 'Bonbon Pics/Yangneom Nom.jpg' },
+        { id: 1009, name: 'Bonbon Buldak', price: 159, category: 'chicken', image: 'Bonbon Pics/Bonbon Buldak.jpg' },
+        { id: 1010, name: 'Snow Cheese', price: 159, category: 'chicken', image: 'Bonbon Pics/snow cheese.jpg' },
+        { id: 1011, name: 'Honey Mustard Chikin', price: 159, category: 'chicken', image: 'Bonbon Pics/Honey Mustard Chikin.jpg' }
+    ];
+
+    products.bubbletea = [
+        createBubbleTeaProduct(2001, 'Classic', 45, 'Bonbon Pics/Milktea3.jpg'),
+        createBubbleTeaProduct(2002, 'Wintermelon', 50, 'Bonbon Pics/Milktea3.jpg'),
+        createBubbleTeaProduct(2003, 'Okinawa', 50, 'Bonbon Pics/Milktea3.jpg'),
+        createBubbleTeaProduct(2004, 'Cookies & Cream', 60, 'Bonbon Pics/Milktea1.jpg'),
+        createBubbleTeaProduct(2005, 'Matcha', 55, 'Bonbon Pics/Milktea4.jpg'),
+        createBubbleTeaProduct(2006, 'Taro', 55, 'Bonbon Pics/Milktea4.jpg'),
+        createBubbleTeaProduct(2007, 'Strawberry', 55, 'Bonbon Pics/Milktea1.jpg'),
+        createBubbleTeaProduct(2008, 'Chocolate', 55, 'Bonbon Pics/Milktea4.jpg'),
+        createBubbleTeaProduct(2009, 'Brown Sugar', 80, 'Bonbon Pics/Milktea2.jpg')
+    ];
+}
 
 // Initialize product display
 function initializeProducts() {
@@ -190,9 +272,14 @@ function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
 
-    const productImageContent = product.image
-        ? `<img src="${product.image}" alt="${product.name}">`
+    const encodedImage = encodeImagePath(product.image);
+    const productImageContent = encodedImage
+        ? `<img src="${encodedImage}" alt="${product.name}" onerror="this.onerror=null;this.src='Bonbon Pics/Logo.png'">`
         : `<i class="fas fa-cloud"></i>`;
+
+    // Check if this is a newly added product (custom property)
+    const hasNameOverlay = product.isNew || false;
+    const nameOverlayHtml = hasNameOverlay ? `<div class="name-overlay">${product.name}</div>` : '';
 
     const hasBubbleTeaSizes = product.category === 'bubbletea' && product.sizes;
 
@@ -206,6 +293,7 @@ function createProductCard(product) {
         card.innerHTML = `
             <div class="product-image">
                 ${productImageContent}
+                ${nameOverlayHtml}
             </div>
             <div class="product-name">${product.name}</div>
             <div class="size-buttons">
@@ -225,6 +313,7 @@ function createProductCard(product) {
         card.innerHTML = `
             <div class="product-image">
                 ${productImageContent}
+                ${nameOverlayHtml}
             </div>
             <div class="product-name">${product.name}</div>
             <div class="product-price">Price: ₱${product.price.toFixed(2)}</div>
@@ -274,7 +363,7 @@ function addToOrder(product, size = null, overridePrice = null) {
 // Update order display
 function updateOrderDisplay() {
     const orderItemsContainer = document.getElementById('orderItemsContainer');
-    
+
     if (currentOrder.length === 0) {
         orderItemsContainer.innerHTML = `
             <div class="empty-order">
@@ -282,7 +371,6 @@ function updateOrderDisplay() {
                 <p>No items in order</p>
             </div>
         `;
-        // Hide sections when order is empty
         toggleOrderSections(false);
         return;
     }
@@ -293,19 +381,18 @@ function updateOrderDisplay() {
         const orderItem = createOrderItem(item);
         orderItemsContainer.appendChild(orderItem);
     });
-    
-    // Show sections when items are added
+
     toggleOrderSections(true);
 }
 
-// Create order item element
 function createOrderItem(item) {
     const orderItem = document.createElement('div');
     orderItem.className = 'order-item';
     orderItem.dataset.itemKey = item.key;
 
-    const orderImageContent = item.image
-        ? `<img src="${item.image}" alt="${item.name}">`
+    const encodedImage = encodeImagePath(item.image);
+    const orderImageContent = encodedImage
+        ? `<img src="${encodedImage}" alt="${item.name}" onerror="this.onerror=null;this.src='Bonbon Pics/Logo.png'">`
         : `<i class="fas fa-cloud"></i>`;
 
     orderItem.innerHTML = `
@@ -375,13 +462,13 @@ function setupEventListeners() {
     const categoriesBtn = document.getElementById('categoriesBtn');
     const dropdownMenu = document.getElementById('dropdownMenu');
 
-    categoriesBtn.addEventListener('click', function(e) {
+    categoriesBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         dropdownMenu.classList.toggle('show');
     });
 
     // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!categoriesBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
             dropdownMenu.classList.remove('show');
         }
@@ -390,7 +477,7 @@ function setupEventListeners() {
     // Category selection
     const dropdownItems = document.querySelectorAll('.dropdown-item');
     dropdownItems.forEach(item => {
-        item.addEventListener('click', function(e) {
+        item.addEventListener('click', function (e) {
             e.preventDefault();
             const category = this.dataset.category;
             currentCategory = category;
@@ -410,10 +497,10 @@ function setupEventListeners() {
     // Close modal
     const closeModalBtn = document.getElementById('closeModalBtn');
     const orderListModal = document.getElementById('orderListModal');
-    
+
     closeModalBtn.addEventListener('click', closeOrderList);
-    
-    orderListModal.addEventListener('click', function(e) {
+
+    orderListModal.addEventListener('click', function (e) {
         if (e.target === orderListModal) {
             closeOrderList();
         }
@@ -421,7 +508,7 @@ function setupEventListeners() {
 }
 
 // Confirm order
-function confirmOrder() {
+async function confirmOrder() {
     if (currentOrder.length === 0) {
         alert('Please add items to the order first.');
         return;
@@ -433,39 +520,80 @@ function confirmOrder() {
     const now = new Date();
     const dateISO = now.toISOString().split('T')[0];
 
-    // Create order object
-    const order = {
-        id: orderIdCounter++,
-        items: [...currentOrder],
+    const orderData = {
+        items: currentOrder.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size || null
+        })),
         paymentMethod: paymentMethod,
         notes: notes,
-        total: total,
-        dateISO: dateISO,
-        dateDisplay: now.toLocaleDateString(),
-        timeDisplay: now.toLocaleTimeString()
+        userId: 1 // Replace with actual logged-in user ID
     };
 
-    // Add to order list
-    orderList.push(order);
-    saveOrdersToStorage();
-    orderIdCounter = computeNextOrderId();
+    try {
+        const apiEndpoint = 'api/orders.php';
+        const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
 
-    // Reset current order
-    currentOrder = [];
-    document.getElementById('notesInput').value = '';
-    document.querySelector('input[name="payment"][value="cash"]').checked = true;
+        if (!response.ok) {
+            const text = await response.text().catch(() => 'unable to read body');
+            let serverMessage = text;
+            try { serverMessage = JSON.parse(text); } catch (e) { }
+            console.error('API returned error', response.status, response.statusText, text);
+            throw new Error(`Failed to save order to database (${response.status}): ${typeof serverMessage === 'string' ? serverMessage : JSON.stringify(serverMessage)}`);
+        }
 
-    updateOrderDisplay();
-    updateTotalPrice();
+        const result = await response.json();
 
-    selectedOrderDate = dateISO;
-    const dateInput = document.getElementById('orderDateFilter');
-    if (dateInput) {
-        dateInput.value = selectedOrderDate;
+        const order = {
+            id: result.orderId,
+            items: [...currentOrder],
+            paymentMethod: paymentMethod,
+            notes: notes,
+            total: total,
+            dateISO: dateISO,
+            dateDisplay: now.toLocaleDateString(),
+            timeDisplay: now.toLocaleTimeString(),
+            orderNumber: result.orderNumber
+        };
+
+        orderList.push(order);
+        saveOrdersToStorage();
+
+        // Reset current order
+        currentOrder = [];
+        document.getElementById('notesInput').value = '';
+        document.querySelector('input[name="payment"][value="cash"]').checked = true;
+
+        updateOrderDisplay();
+        updateTotalPrice();
+
+        selectedOrderDate = dateISO;
+        const dateInput = document.getElementById('orderDateFilter');
+        if (dateInput) {
+            dateInput.value = selectedOrderDate;
+        }
+        updateOrderListDisplay();
+
+        // Show success message
+        alert(`Order ${result.orderNumber} confirmed successfully!`);
+    } catch (error) {
+        console.error('Error confirming order:', error);
+
+        if (error instanceof TypeError && error.message && error.message.toLowerCase().includes('failed to fetch')) {
+            alert('Network error: could not reach the server. Make sure you opened the page via http://localhost/pos.html (not file:///), and that your webserver (XAMPP/Apache) is running.');
+        } else {
+            alert('Error saving order. Please try again.');
+        }
     }
-    updateOrderListDisplay();
-    // Show success message
-    alert('Order confirmed successfully!');
 }
 
 // Open order list modal
@@ -504,9 +632,9 @@ function updateOrderListDisplay() {
     ordersForDate.forEach(order => {
         order.items.forEach((item, index) => {
             const row = document.createElement('tr');
-            
+
             // Show order ID only for first item in order
-            const orderIdCell = index === 0 
+            const orderIdCell = index === 0
                 ? `<td rowspan="${order.items.length}">${formatOrderId(order.id)}</td>`
                 : '';
 
@@ -548,10 +676,10 @@ function editOrder(orderId) {
 
     // Load order back to current order
     currentOrder = order.items.map(item => ({ ...item }));
-    
+
     // Set payment method
     document.querySelector(`input[name="payment"][value="${order.paymentMethod}"]`).checked = true;
-    
+
     // Set notes
     document.getElementById('notesInput').value = order.notes || '';
 
@@ -692,6 +820,7 @@ function exportOrdersToPdf() {
 function setupAddProductModal() {
     const modal = document.getElementById('addProductModal');
     const openBtn = document.getElementById('openAddProductBtn');
+    const openEditBtn = document.getElementById('openEditProductBtn');
     const closeBtn = document.getElementById('closeAddProductBtn');
     const cancelBtn = document.getElementById('cancelAddProductBtn');
     const form = document.getElementById('addProductForm');
@@ -702,6 +831,7 @@ function setupAddProductModal() {
     }
 
     openBtn.addEventListener('click', openAddProductModal);
+    if (openEditBtn) openEditBtn.addEventListener('click', openEditProductModal);
     if (closeBtn) closeBtn.addEventListener('click', closeAddProductModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeAddProductModal);
 
@@ -724,9 +854,75 @@ function setupAddProductModal() {
 function openAddProductModal() {
     resetAddProductForm();
     const modal = document.getElementById('addProductModal');
+    const selectorRow = document.getElementById('editProductSelectorRow');
+    if (selectorRow) selectorRow.style.display = 'none';
+    document.querySelector('.modal-header h3').innerHTML = '<i class="fas fa-drumstick-bite"></i> Add New Product';
+    const primaryBtn = document.querySelector('#addProductForm .primary-btn');
+    if (primaryBtn) primaryBtn.textContent = 'Save Product';
     if (modal) {
         modal.classList.add('show');
     }
+}
+
+function openEditProductModal() {
+    resetAddProductForm();
+    const modal = document.getElementById('addProductModal');
+    const selectorRow = document.getElementById('editProductSelectorRow');
+    if (selectorRow) selectorRow.style.display = 'block';
+    document.querySelector('.modal-header h3').innerHTML = '<i class="fas fa-edit"></i> Edit Product';
+    const primaryBtn = document.querySelector('#addProductForm .primary-btn');
+    if (primaryBtn) primaryBtn.textContent = 'Edit Product';
+    populateEditProductSelector();
+    if (modal) modal.classList.add('show');
+}
+
+function populateEditProductSelector() {
+    const sel = document.getElementById('editProductSelector');
+    if (!sel) return;
+    sel.innerHTML = '';
+    const items = [];
+    Object.keys(products).forEach(cat => {
+        (products[cat] || []).forEach(p => items.push(Object.assign({}, p, { category: cat })));
+    });
+
+    if (items.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'No products available';
+        sel.appendChild(opt);
+        return;
+    }
+
+    items.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.name} — ${capitalize(p.category)}`;
+        opt.dataset.category = p.category;
+        sel.appendChild(opt);
+    });
+
+    sel.removeEventListener('change', handleEditSelectorChange);
+    sel.addEventListener('change', handleEditSelectorChange);
+    sel.selectedIndex = 0;
+    handleEditSelectorChange();
+}
+
+function handleEditSelectorChange() {
+    const sel = document.getElementById('editProductSelector');
+    if (!sel) return;
+    const selectedVal = sel.value;
+    if (!selectedVal) return;
+    const category = sel.options[sel.selectedIndex].dataset.category;
+    const prodList = products[category] || [];
+    const prod = prodList.find(p => String(p.id) === String(selectedVal));
+    if (!prod) return;
+
+    // fill form fields
+    document.getElementById('productNameInput').value = prod.name || '';
+    document.getElementById('productPriceInput').value = prod.price || prod.selling_price || '';
+    document.getElementById('productCategoryInput').value = prod.category || category || 'chicken';
+    document.getElementById('productDescriptionInput').value = prod.description || prod.desc || '';
+    document.getElementById('editingProductId').value = prod.id;
 }
 
 function closeAddProductModal() {
@@ -743,6 +939,17 @@ function resetAddProductForm() {
 
     if (form) form.reset();
     if (imageInput) imageInput.value = '';
+    const desc = document.getElementById('productDescriptionInput');
+    if (desc) desc.value = '';
+    const editingId = document.getElementById('editingProductId');
+    if (editingId) editingId.value = '';
+    const selectorRow = document.getElementById('editProductSelectorRow');
+    if (selectorRow) selectorRow.style.display = 'none';
+
+    const header = document.querySelector('.modal-header h3');
+    if (header) header.innerHTML = '<i class="fas fa-drumstick-bite"></i> Add New Product';
+    const primaryBtn = document.querySelector('#addProductForm .primary-btn');
+    if (primaryBtn) primaryBtn.textContent = 'Save Product';
 
     destroyCropper(true);
 }
@@ -762,7 +969,7 @@ function handleAddProductImage(event) {
     }
 
     const reader = new FileReader();
-    reader.onload = function(loadEvent) {
+    reader.onload = function (loadEvent) {
         const cropperImage = document.getElementById('cropperImage');
         if (!cropperImage) return;
 
@@ -817,7 +1024,7 @@ function destroyCropper(clearPreview = false) {
     }
 }
 
-function handleAddProductSubmit(event) {
+async function handleAddProductSubmit(event) {
     event.preventDefault();
 
     const nameInput = document.getElementById('productNameInput');
@@ -838,35 +1045,146 @@ function handleAddProductSubmit(event) {
         return;
     }
 
-    if (!cropperInstance) {
+    const editingId = document.getElementById('editingProductId') ? document.getElementById('editingProductId').value : '';
+
+    if (!cropperInstance && !editingId) {
         alert('Please upload and crop an image for the product.');
         return;
     }
 
-    const canvas = cropperInstance.getCroppedCanvas({
-        width: 400,
-        height: 400,
-        imageSmoothingQuality: 'high'
-    });
-    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    let imageDataUrl = null;
+    if (cropperInstance) {
+        const canvas = cropperInstance.getCroppedCanvas({
+            width: 400,
+            height: 400,
+            imageSmoothingQuality: 'high'
+        });
+        imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    }
 
-    const newProduct = {
-        id: nextProductId++,
-        name,
-        price: priceValue,
-        category,
-        image: imageDataUrl
-    };
+    if (editingId) {
+        try {
+            const payload = {
+                productId: Number(editingId),
+                name: name,
+                sellingPrice: priceValue,
+                description: document.getElementById('productDescriptionInput').value || '',
+                category: category
+            };
+            if (imageDataUrl) payload.imageData = imageDataUrl;
 
-    addCustomProductToCatalog(newProduct);
-    closeAddProductModal();
-    alert(`${newProduct.name} was added to the catalog!`);
+            const resp = await fetch(API_BASE + '/editProduct.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) {
+                const txt = await resp.text().catch(() => '');
+                throw new Error(`Failed to update product (${resp.status}): ${txt}`);
+            }
+
+            const result = await resp.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Unknown error');
+            }
+
+            if (result.product) {
+                const updated = result.product;
+                const newCat = (updated.category_slug || updated.category_name || updated.category_id) ? (updated.category_slug || String(updated.category_id)) : 'uncategorized';
+
+                Object.keys(products).forEach(cat => {
+                    products[cat] = (products[cat] || []).filter(p => Number(p.id) !== Number(updated.product_id));
+                });
+
+                if (!products[newCat]) products[newCat] = [];
+
+                const localProd = {
+                    id: Number(updated.product_id),
+                    name: updated.name,
+                    price: parseFloat(updated.selling_price || updated.price || 0),
+                    category: newCat,
+                    description: updated.description || '',
+                    image: updated.image_path || null
+                };
+
+                products[newCat].push(localProd);
+
+                if (currentCategory === 'all' || currentCategory === newCat) displayProducts(currentCategory);
+                closeAddProductModal();
+                alert('Product updated successfully.');
+            } else {
+                alert('Product updated but server did not return updated data. Refresh to verify.');
+            }
+
+        } catch (err) {
+            console.error('Edit product failed', err);
+            alert('Failed to update product: ' + (err.message || 'unknown error'));
+        }
+
+        return;
+    }
+
+    try {
+        const payload = {
+            name: name,
+            category: category,
+            sellingPrice: priceValue,
+            costPrice: 0,
+            description: document.getElementById('productDescriptionInput').value || '',
+            imageData: imageDataUrl
+        };
+
+        const resp = await fetch(API_BASE + '/addProduct.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+            const txt = await resp.text().catch(() => '');
+            throw new Error(`Failed to create product (${resp.status}): ${txt}`);
+        }
+
+        const result = await resp.json();
+        const createdId = result.productId;
+
+        const imagePath = result.imagePath || imageDataUrl;
+
+        const newProduct = {
+            id: createdId || nextProductId++,
+            name,
+            price: priceValue,
+            category,
+            image: imagePath,
+            isNew: true
+        };
+
+        addCustomProductToCatalog(newProduct);
+        closeAddProductModal();
+        alert(`${newProduct.name} was added to the catalog!`);
+
+        if (createdId && createdId >= nextProductId) nextProductId = createdId + 1;
+
+    } catch (err) {
+        console.error('Add product failed', err);
+        alert('Failed to add product: ' + (err.message || 'unknown error'));
+    }
 }
 
 function addCustomProductToCatalog(product) {
     if (!products[product.category]) {
         products[product.category] = [];
     }
+
+    if (product.category === 'bubbletea' && !product.sizes) {
+        product.sizes = {
+            small: product.price,
+            medium: product.price + 15,
+            large: product.price + 30
+        };
+    }
+
     products[product.category].push(product);
 
     if (currentCategory === 'all' || currentCategory === product.category) {
@@ -880,27 +1198,41 @@ function confirmProductDeletion(product) {
     deleteProductFromCatalog(product.id, product.category);
 }
 
-function deleteProductFromCatalog(productId, category) {
-    const categoryList = products[category];
-    if (!Array.isArray(categoryList)) {
-        alert('Unable to remove product: category not found.');
-        return;
+async function deleteProductFromCatalog(productId, category) {
+    try {
+        const response = await fetch(API_BASE + '/deleteProduct.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, category, _method: 'DELETE' })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || 'Failed to delete product');
+            return;
+        }
+
+        const categoryList = products[category];
+        if (categoryList) {
+            const index = categoryList.findIndex(item => item.id === productId);
+            if (index !== -1) {
+                categoryList.splice(index, 1);
+            }
+        }
+
+        if (currentCategory === 'all' || currentCategory === category) {
+            displayProducts(currentCategory);
+        }
+
+        alert(data.message || 'Product removed successfully');
+    } catch (error) {
+        console.error('Delete product failed:', error);
+        alert('Error deleting product: ' + (error.message || 'unknown error'));
     }
-
-    const index = categoryList.findIndex(item => item.id === productId);
-    if (index === -1) {
-        alert('Product not found. It may have already been deleted.');
-        return;
-    }
-
-    const [removedProduct] = categoryList.splice(index, 1);
-
-    if (currentCategory === 'all' || currentCategory === category) {
-        displayProducts(currentCategory);
-    }
-
-    alert(`"${removedProduct.name}" has been removed from the catalog.`);
 }
+
+
 
 // Generate printable/downloadable receipt
 function generateReceipt(orderId) {
@@ -986,48 +1318,3 @@ window.editOrder = editOrder;
 window.cancelOrder = cancelOrder;
 window.generateReceipt = generateReceipt;
 window.addToOrder = addToOrder;
-
-// Setup responsive sidebar toggle
-function setupSidebarToggle() {
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebarClose = document.getElementById('sidebarClose');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.add('show');
-            sidebarOverlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        });
-    }
-
-    if (sidebarClose) {
-        sidebarClose.addEventListener('click', function() {
-            sidebar.classList.remove('show');
-            sidebarOverlay.classList.remove('show');
-            document.body.style.overflow = '';
-        });
-    }
-
-    if (sidebarOverlay) {
-        sidebarOverlay.addEventListener('click', function() {
-            sidebar.classList.remove('show');
-            sidebarOverlay.classList.remove('show');
-            document.body.style.overflow = '';
-        });
-    }
-
-    // Close sidebar when clicking on nav items (mobile)
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        });
-    });
-}
-

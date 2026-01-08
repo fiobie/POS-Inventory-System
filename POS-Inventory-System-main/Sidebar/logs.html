@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - Bonbon Kitchen</title>
+    <link rel="stylesheet" href="pos.css">
+    <link rel="stylesheet" href="logs.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="Bonbon Pics/Logo.png" alt="Bonbon Kitchen Logo" class="logo-image">
+                <h1>Bonbon Kitchen</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item" data-page="dashboard">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="pos.html" class="nav-item" data-page="pos">
+                    <span class="nav-icon"><i class="fas fa-shopping-cart"></i></span>
+                    <span class="nav-text">POS</span>
+                </a>
+                <a href="inventory.html" class="nav-item" data-page="inventory">
+                    <span class="nav-icon"><i class="fas fa-box"></i></span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="logs.html" class="nav-item active" data-page="logs">
+                    <span class="nav-icon"><i class="fas fa-file-alt"></i></span>
+                    <span class="nav-text">Logs</span>
+                </a>
+                <a href="settings.html" class="nav-item" data-page="settings">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <h2 class="page-title">Logs</h2>
+            </header>
+            <div class="content-wrapper">
+                <section class="product-catalog">
+                    <div class="catalog-header">
+                        <h3 class="catalog-title">Application Logs</h3>
+                    </div>
+                    <div class="logs-container">
+                        <div class="logs-header-row">
+                            <p style="margin:0;font-weight:600;">Recent product edit logs</p>
+                            <div class="logs-controls">
+                                <select id="logCategoryFilter">
+                                    <option value="all">All</option>
+                                    <option value="add">Added</option>
+                                    <option value="edit">Edited</option>
+                                </select>
+                                <button id="refreshLogsBtn" class="add-product-btn">Refresh</button>
+                            </div>
+                        </div>
+                        <div id="logsContainer">
+                            <table id="logsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>User</th>
+                                        <th>Name</th>
+                                        <th>Price (Before)</th>
+                                        <th>Price (After)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="logs.js"></script>
+</body>
+
+</html>

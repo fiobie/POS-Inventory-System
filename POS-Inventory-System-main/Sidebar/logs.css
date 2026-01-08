@@ -1,0 +1,127 @@
+/* Logs page styles */
+.logs-container {
+    padding: 20px;
+}
+
+.logs-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.logs-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#logsContainer {
+    margin-top: 12px;
+}
+
+#logsTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#logsTable th {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.logs-cell {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.loading-row td {
+    padding: 12px;
+    text-align: center;
+}
+
+#logCategoryFilter {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+#refreshLogsBtn.add-product-btn {
+    margin-left: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .logs-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .logs-controls {
+        justify-content: flex-start;
+        gap: 6px;
+    }
+
+    #logCategoryFilter {
+        width: 48%;
+    }
+
+    #refreshLogsBtn.add-product-btn {
+        width: 48%;
+    }
+
+    #logsTable th:nth-child(4),
+    #logsTable th:nth-child(5),
+    #logsTable td:nth-child(4),
+    #logsTable td:nth-child(5) {
+        display: none;
+        /* hide price columns on narrower screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .logs-container {
+        padding: 12px;
+    }
+
+    .logs-header-row p {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    #logsTable th,
+    .logs-cell {
+        padding: 6px;
+        font-size: 13px;
+    }
+
+    /* Stack label + value inside single cell for mobile (accessible compact view) */
+    #logsTable tbody tr {
+        display: block;
+        margin-bottom: 10px;
+        border: 1px solid #f0f0f0;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    #logsTable thead {
+        display: none;
+    }
+
+    #logsTable td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+    }
+
+    #logsTable td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
+        margin-right: 8px;
+        flex: 0 0 45%;
+    }
+}
